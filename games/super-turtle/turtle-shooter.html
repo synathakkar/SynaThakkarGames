@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Super Turtle: Universal</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #222; 
+            font-family: 'VT323', monospace; 
+            user-select: none; 
+            -webkit-user-select: none; /* Safari */
+            touch-action: none; /* Disables browser gestures */
+        }
+        canvas { display: block; width: 100%; height: 100%; }
+        
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 100;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* Responsive Top Bar */
+        #top-bar { 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 2vh 3vw; /* Relative padding */
+            box-sizing: border-box; 
+            pointer-events: auto; 
+        }
+        
+        /* Dark HUD with Responsive Text */
+        #hud {
+            background: rgba(0,0,0,0.85); 
+            padding: 0.8vh 2vw; 
+            border-radius: 15px; 
+            border: 3px solid #444; border-bottom: 5px solid #222;
+            color: #fff; 
+            /* Clamp font size: Minimum 16px, Preferred 3vh, Max 32px */
+            font-size: clamp(20px, 4vh, 32px); 
+            display: flex; align-items: center; gap: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+        }
+        .score-group { display: flex; align-items: center; gap: 8px; }
+        .label { color: #888; font-size: 0.7em; margin-right: 5px; }
+        .hi-score { color: #FFD700; }
+        .curr-score { color: #fff; }
+        
+        /* Responsive Coin Icon */
+        .hud-coin {
+            width: clamp(18px, 3vh, 26px); 
+            height: clamp(18px, 3vh, 26px); 
+            background-color: #FFD700; border-radius: 50%; position: relative;
+            border: 2px solid #DAA520; display: inline-block; box-sizing: border-box;
+        }
+        .hud-coin::after { content: ''; position: absolute; top: 20%; left: 20%; width: 20%; height: 20%; background-color: white; border-radius: 50%; }
+
+        /* Floating Level Text */
+        #level-toast {
+            position: absolute; top: 18%; width: 100%; 
+            display: flex; justify-content: center;
+            pointer-events: none; z-index: 500;
+        }
+        
+        .toast-content {
+            text-align: center;
+            text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+            opacity: 0; 
+            transform: scale(0.8);
+        }
+
+        .fade-anim { animation: popIn 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.5) translateY(-30px); }
+            15% { opacity: 1; transform: scale(1.0) translateY(0); }
+            85% { opacity: 1; transform: scale(1.0) translateY(0); }
+            100% { opacity: 0; transform: scale(1.1) translateY(-20px); }
+        }
+
+        /* Responsive Buttons */
+        .icon-btn {
+            width: clamp(40px, 8vh, 60px); 
+            height: clamp(40px, 8vh, 60px); 
+            background: #333;
+            border: 3px solid #555; border-radius: 12px; color: #ccc;
+            font-size: clamp(20px, 4vh, 30px); 
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: all 0.1s; box-shadow: 0 4px 0 #111;
+        }
+        .icon-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #111; }
+
+        /* Responsive Screens */
+        .screen {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; color: white; 
+            background: rgba(20, 20, 20, 0.95); 
+            padding: 5vh 5vw; 
+            border-radius: 20px;
+            border: 3px solid #444; pointer-events: auto; display: none; 
+            width: 85%; max-width: 450px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+        }
+        
+        h1 { 
+            font-size: clamp(32px, 8vw, 64px); 
+            margin-bottom: 2vh; color: #4FC3F7; 
+            text-shadow: 0 0 10px rgba(79, 195, 247, 0.5); line-height: 1.1; margin-top: 0; 
+        }
+        p { 
+            font-size: clamp(16px, 4vw, 24px); 
+            line-height: 1.4; color: #aaa; margin-bottom: 3vh; letter-spacing: 1px; 
+        }
+        
+        button.action-btn {
+            padding: 2vh 0; width: 100%; font-family: inherit; 
+            font-size: clamp(20px, 5vw, 32px);
+            background: linear-gradient(to bottom, #4CAF50, #2E7D32);
+            color: #fff; border: none; border-radius: 10px; cursor: pointer; 
+            box-shadow: 0 0.8vh 0 #1B5E20; margin-top: 2vh; font-weight: bold;
+            transition: transform 0.1s;
+        }
+        button.action-btn:active { transform: translateY(0.8vh); box-shadow: 0 0 0; }
+        
+        .toggle-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            margin: 2vh 0; font-size: clamp(18px, 4vw, 24px); color: #fff; background: #333; 
+            padding: 1.5vh; border-radius: 10px; border: 2px solid #444;
+        }
+        #start-screen { display: block; }
+    </style>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <div id="top-bar">
+            <div id="hud">
+                <div class="score-group"><span class="label">HI</span><span id="hi-val" class="hi-score">0</span></div>
+                <div class="score-group" style="border-left: 2px solid #444; padding-left: 15px;">
+                    <div class="hud-coin"></div><span id="score-val" class="curr-score">0</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div class="icon-btn" onclick="toggleMenu()">⚙️</div>
+                <div class="icon-btn" onclick="togglePause()">⏸</div>
+            </div>
+        </div>
+
+        <div id="level-toast">
+            <div class="toast-content" id="toast-inner"></div>
+        </div>
+
+        <div id="start-screen" class="screen">
+            <h1>SUPER TURTLE<br><span style="font-size:0.5em; color:#fff;">ADVENTURE</span></h1>
+            <p>TAP TO JUMP • AUTO RUNNING</p>
+            <button class="action-btn" onclick="startGame()">TAP TO RUN</button>
+        </div>
+        <div id="pause-screen" class="screen">
+            <h1>PAUSED</h1><button class="action-btn" onclick="togglePause()">RESUME</button>
+            <button class="action-btn" style="background: #444; color: #fff; box-shadow: 0 0.8vh 0 #222;" onclick="toggleMenu()">SETTINGS</button>
+        </div>
+        <div id="menu-screen" class="screen">
+            <h1>SETTINGS</h1>
+            <div class="toggle-row"><span>SOUND & MUSIC</span><div class="icon-btn" id="sound-toggle" onclick="toggleSound()">🔊</div></div>
+            <button class="action-btn" onclick="closeMenu()" style="background: #444; color: #fff; box-shadow: 0 0.8vh 0 #222;">CLOSE</button>
+        </div>
+        <div id="game-over-screen" class="screen">
+            <h1 style="color: #FF5252;">CRASHED!</h1>
+            <div style="margin-bottom: 20px; font-size: clamp(20px, 5vw, 28px);">SCORE: <span id="final-score" style="color: #FFD700;">0</span></div>
+            <button class="action-btn" onclick="resetGame()">RUN AGAIN</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+    
+    const scoreEl = document.getElementById('score-val');
+    const hiScoreEl = document.getElementById('hi-val');
+    const finalScoreEl = document.getElementById('final-score');
+    const toastInner = document.getElementById('toast-inner'); 
+    const screens = { start: document.getElementById('start-screen'), pause: document.getElementById('pause-screen'), menu: document.getElementById('menu-screen'), gameover: document.getElementById('game-over-screen') };
+    const soundToggleBtn = document.getElementById('sound-toggle');
+
+    // --- LOGICAL RESOLUTION FOR SCALING ---
+    // The game "thinks" it is always 720px tall. We scale visually to fit the device.
+    const LOGICAL_HEIGHT = 720;
+    let gameScale = 1.0;
+
+    // --- AUDIO SYSTEM ---
+    const AudioSys = {
+        ctx: null, enabled: true, bgmTimer: null, melodyIndex: 0, activeVoices: 0,
+        melody: [261.6, 329.6, 392.0, 493.9, 523.3, 392.0, 329.6, 392.0], 
+        init: function() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
+        play: function(type) {
+            if (!this.enabled || !this.ctx || this.activeVoices > 4) return;
+            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+            osc.connect(gain); gain.connect(this.ctx.destination); const now = this.ctx.currentTime;
+            this.activeVoices++;
+            if (type === 'jump') { osc.type = 'square'; osc.frequency.setValueAtTime(150, now); osc.frequency.linearRampToValueAtTime(300, now+0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.1); osc.start(now); osc.stop(now+0.1); } 
+            else if (type === 'coin') { osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(1800, now+0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.3); osc.start(now); osc.stop(now+0.3); } 
+            else if (type === 'die') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(50, now+0.4); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.4); osc.start(now); osc.stop(now+0.4); } 
+            else if (type === 'click') { osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.05); osc.start(now); osc.stop(now+0.05); }
+            osc.onended = () => { this.activeVoices--; osc.disconnect(); gain.disconnect(); };
+        },
+        startMusic: function() { if(this.bgmTimer) return; this.playNextNote(); },
+        stopMusic: function() { if(this.bgmTimer) clearTimeout(this.bgmTimer); this.bgmTimer = null; },
+        playNextNote: function() {
+            if (!this.enabled || !this.ctx) { this.bgmTimer = setTimeout(() => this.playNextNote(), 1000); return; }
+            const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
+            const filter = this.ctx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.value = 600;
+            osc.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+            const now = this.ctx.currentTime; const freq = this.melody[this.melodyIndex];
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, now);
+            gain.gain.setValueAtTime(0, now); gain.gain.linearRampToValueAtTime(0.02, now + 0.1); gain.gain.linearRampToValueAtTime(0, now + 0.6);
+            osc.start(now); osc.stop(now + 0.6);
+            setTimeout(() => { osc.disconnect(); filter.disconnect(); gain.disconnect(); }, 700);
+            this.melodyIndex = (this.melodyIndex + 1) % this.melody.length;
+            this.bgmTimer = setTimeout(() => this.playNextNote(), 300);
+        }
+    };
+
+    // --- GAME STATE ---
+    const PALETTES = {
+        green: { skyTop: "#4FC3F7", skyBottom: "#E1F5FE", ground: "#5D4037", grass: "#64DD17", grassRim: "#AEEA00", mountBack: "#546E7A", mountFront: "#78909C" },
+        desert: { skyTop: "#FFAB91", skyBottom: "#FFF59D", ground: "#C59D76", grass: "#FFECB3", grassRim: "#FFD54F", mountBack: "#5D4037", mountFront: "#8D6E63" }
+    };
+    
+    let currentColors = { ...PALETTES.green }; 
+    let targetTheme = 'green';
+    let transitionProgress = 0.0;
+    let confettiTriggered = false;
+    let level2Announced = false;
+
+    let gameState = "START"; let prevGameState = "START";
+    let score = 0; let highScore = localStorage.getItem('st_highscore') || 0;
+    let cameraX = 0; let cameraY = 0; let nextGenX = 0; 
+    let bgScrollX = 0; 
+    let lastTime = 0; let animTime = 0; let skyGradient;
+
+    const platforms = []; const coins = []; const particles = [];
+    const clouds = []; const birds = []; const mountains = [];
+
+    const player = { x: 0, y: 0, w: 40, h: 40, dx: 0, dy: 0, speed: 5.5, jumpPower: -17, gravity: 0.9, grounded: false, state: "idle", facingRight: true, jumpCount: 0, maxJumps: 2, rotation: 0 };
+
+    // --- VARIETY LEVEL PATTERNS ---
+    const LEVEL_PATTERNS = [
+        { w: 1000, p: [[0,0,1000,'ground']], c: [[200,-40], [300,-40], [400,-40], [500,-40], [600,-40]] },
+        { w: 900, p: [[0,0,900,'ground']], c: [[180,-60], [250,-120], [330,-160], [410,-120], [480,-60]] },
+        { w: 1400, p: [[0,0,300,'ground'], [400,-120,150,'float'], [650,-120,150,'float'], [900,-120,150,'float'], [1150,0,250,'ground']], c: [[475,-170], [725,-170], [975,-170]] },
+        { w: 900, p: [[0,0,250,'ground'], [650,0,250,'ground']], c: [[300,-50], [380,-130], [450,-170], [520,-130], [600,-50]] },
+        { w: 1000, p: [[0,0,1000,'ground'], [300,-100,100,'float'], [500,-200,100,'float'], [700,-300,100,'float']], c: [[350,-150], [550,-250], [750,-350]] },
+        { w: 900, p: [[0,0,900,'ground']], c: [[150,-40], [250,-100], [350,-40], [450,-100], [550,-40]] },
+        { w: 1200, p: [[0,0,1200,'ground'], [400,-180,400,'float']], c: [[200,-40], [500,-230], [600,-230], [700,-230], [1000,-40]] },
+        { w: 800, p: [[0,0,800,'ground']], c: [[400,-40], [400,-90], [400,-140]] },
+        { w: 1000, p: [[0,0,300,'ground'], [700,0,300,'ground']], c: [[500,-100]] },
+        { w: 1200, p: [[0,0,1200,'ground'], [300,-100,150,'float'], [550,-200,150,'float'], [800,-100,150,'float']], c: [[375,-150], [625,-250], [875,-150]] }
+    ];
+
+    const MT_SHAPES = [[], []]; 
+
+    function init() {
+        hiScoreEl.innerText = highScore;
+        resize(); // Initial resize calculates gameScale
+        
+        for(let i=0; i<60; i++) platforms.push({ active: false, decor: [] });
+        for(let i=0; i<150; i++) coins.push({ active: false, bob: Math.random() });
+        for(let i=0; i<80; i++) particles.push({ active: false }); 
+        
+        // MOUNTAINS: Front 285px / Back 420px (Relative to LOGICAL_HEIGHT)
+        for(let l=0; l<2; l++) {
+            let h = l===0 ? 420 : 285; 
+            let width = 1200;
+            let pts = [];
+            pts.push({x:0, y:0}); 
+            // Chiseled Shapes
+            let numPeaks = Math.floor(width / 100); 
+            for(let p=1; p<numPeaks; p++) {
+                let x = (width/numPeaks)*p + (Math.random()*40-20);
+                let y = h - (Math.random()*(l===0?120:60)); 
+                if (p > 1) {
+                    let prevPt = pts[pts.length-1];
+                    let midX = (prevPt.x + x) / 2;
+                    let midY = (prevPt.y + y) / 2 + (Math.random()*30-15); 
+                    pts.push({x:midX, y:midY});
+                }
+                pts.push({x:x, y:y});
+            }
+            pts.push({x:width, y:0});
+            pts[0].y = 0; pts[pts.length-1].y = 0; 
+            MT_SHAPES[l] = pts;
+        }
+
+        // Generate Chains
+        for(let i=0; i<6; i++) createMountain(i, 0); 
+        for(let i=0; i<6; i++) createMountain(i, 1);
+        
+        for(let i=0; i<6; i++) clouds.push({ x: Math.random() * 2000, y: Math.random() * 250, w: 80 + Math.random()*80, speed: 0.2 + Math.random()*0.3 });
+        for(let i=0; i<5; i++) birds.push({ x: Math.random() * 2000, y: Math.random() * 400, speed: 2 + Math.random(), offset: Math.random()*10 });
+
+        resetGameLogic();
+        requestAnimationFrame(loop);
+    }
+
+    function showLevelText(mainText, subText) {
+        toastInner.innerHTML = `<span style="font-size:clamp(40px, 8vw, 64px); color:#fff; line-height:1;">${mainText}</span><br>
+                                <span style="font-size:clamp(24px, 5vw, 40px); color:#fff; letter-spacing:4px; text-transform:uppercase;">${subText}</span>`;
+        toastInner.classList.remove('fade-anim');
+        void toastInner.offsetWidth; 
+        toastInner.classList.add('fade-anim');
+    }
+
+    function lerpColor(a, b, amount) { 
+        var ah = parseInt(a.replace(/#/g, ''), 16),
+            ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
+            bh = parseInt(b.replace(/#/g, ''), 16),
+            br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
+            rr = ar + amount * (br - ar),
+            rg = ag + amount * (bg - ag),
+            rb = ab + amount * (bb - ab);
+        return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
+    }
+
+    function createMountain(index, layer) {
+        let w = layer === 0 ? 1000 : 800;
+        mountains.push({ index: index, active: true, x: index * w, layer: layer, w: w, points: MT_SHAPES[layer] });
+    }
+
+    // --- CORE SCALING LOGIC ---
+    // This makes the game look identical on Phone vs PC
+    function resize() {
+        const dpr = Math.min(window.devicePixelRatio, 2); 
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        
+        // Calculate Scale based on Height (720p Baseline)
+        // If screen is very wide (PC), height dictates scale.
+        // If screen is very tall (Phone Portrait), we still scale by height but width is narrow.
+        gameScale = canvas.height / LOGICAL_HEIGHT;
+        
+        ctx.setTransform(1,0,0,1,0,0); 
+        // We do NOT use ctx.scale here continuously, we apply it in draw()
+        
+        updateSkyGradient();
+    }
+    window.addEventListener('resize', resize);
+
+    function updateSkyGradient() {
+        // Gradient must cover full canvas height
+        skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGradient.addColorStop(0, currentColors.skyTop); 
+        skyGradient.addColorStop(1, currentColors.skyBottom);
+    }
+
+    function loop(t) { 
+        if(!lastTime) lastTime=t; const dt=(t-lastTime)/(1000/60); lastTime=t; 
+        update(Math.min(dt, 2.0)); draw(); requestAnimationFrame(loop); 
+    }
+
+    // --- ACTIONS ---
+    window.startGame = function() { 
+        AudioSys.init(); AudioSys.play('click'); AudioSys.startMusic(); 
+        showScreen(null); gameState = "PLAYING"; 
+        showLevelText("LEVEL 1", "GRASSLAND"); 
+    };
+    window.resetGame = function() { 
+        AudioSys.play('click'); AudioSys.startMusic(); 
+        showScreen(null); resetGameLogic(); gameState = "PLAYING"; 
+        showLevelText("LEVEL 1", "GRASSLAND"); 
+    };
+    window.togglePause = function() { AudioSys.play('click'); if (gameState === "PLAYING") { gameState = "PAUSED"; showScreen('pause'); AudioSys.stopMusic(); } else if (gameState === "PAUSED") { gameState = "PLAYING"; showScreen(null); AudioSys.startMusic(); } };
+    window.toggleMenu = function() { AudioSys.play('click'); if (gameState !== "MENU") { prevGameState = gameState; gameState = "MENU"; showScreen('menu'); } };
+    window.closeMenu = function() { AudioSys.play('click'); showScreen(prevGameState === "START" ? 'start' : (prevGameState === "PAUSED" ? 'pause' : null)); gameState = prevGameState; };
+    window.toggleSound = function() { AudioSys.enabled = !AudioSys.enabled; soundToggleBtn.innerText = AudioSys.enabled ? "🔊" : "🔇"; AudioSys.play('click'); if(AudioSys.enabled && gameState === "PLAYING") AudioSys.startMusic(); if(!AudioSys.enabled) AudioSys.stopMusic(); };
+
+    function showScreen(name) { Object.values(screens).forEach(s => s.style.display = 'none'); if(name && screens[name]) screens[name].style.display = 'block'; }
+
+    function resetGameLogic() {
+        score = 0; scoreEl.innerText = "0"; animTime = 0; bgScrollX = 0;
+        
+        targetTheme = 'green'; transitionProgress = 0.0; confettiTriggered = false; level2Announced = false;
+        currentColors = { ...PALETTES.green }; updateSkyGradient();
+
+        player.x = 200; player.y = -200; player.dx = 0; player.dy = 5; player.rotation = 0; cameraX = 0; cameraY = -200; player.speed = 5.5;
+        platforms.forEach(p => p.active = false); coins.forEach(c => c.active = false); particles.forEach(p => p.active = false);
+        
+        // Ground base is relative to logical height (540px)
+        spawnPlatform(-500, LOGICAL_HEIGHT * 0.75, 2000, 'ground'); nextGenX = 1500;
+        
+        let w0 = 1000, w1 = 800;
+        mountains.forEach(m => { m.x = m.index * (m.layer===0 ? w0 : w1); });
+    }
+
+    function shiftWorld(offset) {
+        player.x -= offset; cameraX -= offset; nextGenX -= offset;
+        platforms.forEach(p => { if(p.active) p.x -= offset; });
+        coins.forEach(c => { if(c.active) c.x -= offset; });
+        particles.forEach(p => { if(p.active) p.x -= offset; });
+        mountains.forEach(m => { m.x -= offset; });
+    }
+
+    function spawnConfetti() {
+        for(let i=0; i<50; i++) {
+            let p = particles.find(i => !i.active);
+            if(!p) { p = {}; particles.push(p); }
+            p.active = true;
+            p.x = player.x + (Math.random()-0.5)*1000 + 400; 
+            p.y = -100; 
+            p.life = 3.0; 
+            p.type = 'confetti';
+            p.vx = (Math.random()-0.5)*5;
+            p.vy = Math.random()*5 + 2;
+            p.color = `hsl(${Math.random()*360}, 100%, 50%)`;
+            p.size = 5 + Math.random()*5;
+        }
+        AudioSys.play('coin'); 
+    }
+
+    function update(dt) {
+        if(gameState === "PAUSED" || gameState === "MENU") return;
+        if(gameState === "START") {
+            animTime += dt;
+            // Center player in logical coordinates based on viewport width
+            let logicalWidth = canvas.width / gameScale;
+            player.x = (logicalWidth / 2) - 20; 
+            player.y = (LOGICAL_HEIGHT / 2) - 120 + Math.sin(animTime*0.05)*10;
+            player.facingRight = true; return;
+        }
+        if(gameState === "GAMEOVER") return;
+        
+        animTime += dt; 
+        if (player.speed < 12) player.speed += 0.0008 * dt; 
+        player.dx = player.speed; 
+        bgScrollX += player.speed * dt; 
+
+        // --- TRANSITION LOGIC (100 Coins) ---
+        if (score >= 100 && targetTheme === 'green') {
+            targetTheme = 'desert';
+        }
+
+        if (targetTheme === 'desert' && transitionProgress < 1.0) {
+            transitionProgress += 0.005 * dt; 
+            if (transitionProgress > 1.0) transitionProgress = 1.0;
+            
+            if (!confettiTriggered && transitionProgress > 0.1) {
+                spawnConfetti();
+                confettiTriggered = true;
+                if(!level2Announced) {
+                    showLevelText("LEVEL 2", "DESERT");
+                    level2Announced = true;
+                }
+            }
+
+            let keys = Object.keys(currentColors);
+            keys.forEach(k => {
+                currentColors[k] = lerpColor(PALETTES.green[k], PALETTES.desert[k], transitionProgress);
+            });
+            updateSkyGradient();
+        }
+
+        if (cameraX > 5000) shiftWorld(5000);
+        
+        // Spawn ahead based on logical width
+        let logicalWidth = canvas.width / gameScale;
+        if (nextGenX < cameraX + logicalWidth + 1000) generatePattern();
+        
+        const deleteX = cameraX - 1000;
+        platforms.forEach(p => { if(p.active && p.x + p.w < deleteX) p.active = false; });
+        coins.forEach(c => { if(c.active && c.x < deleteX) c.active = false; });
+
+        player.dy += player.gravity * dt; 
+        player.x += player.dx * dt; 
+        player.y += player.dy * dt;
+        player.state = "walk";
+
+        if (player.rotation > 0) player.rotation -= 20 * dt; 
+        if (player.rotation < 0) player.rotation = 0;
+
+        player.grounded = false;
+        for(let i=0; i<platforms.length; i++) {
+            let p = platforms[i];
+            if(!p.active) continue;
+            
+            if (player.x + 30 > p.x && player.x + 10 < p.x + p.w &&
+                player.y + player.h >= p.y && player.y + player.h <= p.y + p.h + 25 &&
+                player.dy >= 0) {
+                player.dy = 0; player.y = p.y - player.h; player.grounded = true; player.jumpCount = 0;
+            }
+        }
+        if(!player.grounded) player.state = "jump";
+        
+        // Death Logic: 150px below ground (LOGICAL_HEIGHT * 0.75 + 150)
+        let groundY = LOGICAL_HEIGHT * 0.75;
+        if(player.y > groundY + 150) { 
+            AudioSys.play('die'); AudioSys.stopMusic(); gameState = "GAMEOVER"; 
+            if(score > highScore) { highScore = score; localStorage.setItem('st_highscore', highScore); hiScoreEl.innerText = highScore; }
+            finalScoreEl.innerText = score; showScreen('gameover'); 
+        }
+
+        let targetCamX = player.x - (logicalWidth * 0.3);
+        cameraX += (targetCamX - cameraX) * (0.1 * dt);
+        
+        let targetCamY = 0;
+        if (player.y < -100) targetCamY = player.y + 100;
+        cameraY += (targetCamY - cameraY) * (0.05 * dt);
+
+        coins.forEach(c => {
+            if(!c.active) return;
+            if(Math.sqrt((player.x+20 - c.x)**2 + (player.y+20 - c.y)**2) < 40) {
+                c.active = false; score++; scoreEl.innerText = score; AudioSys.play('coin'); spawnParticles(c.x, c.y, "gold");
+            }
+        });
+
+        // Mountain Chain
+        for(let layer=0; layer<2; layer++) {
+            let group = mountains.filter(m => m.layer === layer).sort((a,b) => a.x - b.x);
+            let pFactor = layer === 0 ? 0.1 : 0.3;
+            let first = group[0];
+            if (first.x - (cameraX * pFactor) + first.w < -100) {
+                let last = group[group.length-1];
+                first.x = last.x + last.w - 5; 
+            }
+        }
+
+        clouds.forEach(c => { c.x += c.speed * dt; if(c.x - (cameraX*0.05) > logicalWidth + 200) c.x -= (logicalWidth + 400); });
+        birds.forEach(b => { b.x += b.speed * dt; if (b.x > cameraX + logicalWidth + 100) b.x = cameraX - 200; });
+        particles.forEach(p => { 
+            if(!p.active) return; 
+            p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.05 * dt; 
+            if(p.type === 'confetti') {
+                p.vy *= 0.95; 
+                p.x += Math.sin(animTime * 0.5 + p.life) * 2; 
+            } else {
+                p.vy += 0.2 * dt; 
+            }
+            if(p.life <= 0) p.active = false; 
+        });
+    }
+
+    function generatePattern() {
+        const pat = LEVEL_PATTERNS[Math.floor(Math.random() * LEVEL_PATTERNS.length)];
+        let startX = nextGenX;
+        let groundY = LOGICAL_HEIGHT * 0.75;
+        
+        pat.p.forEach(pDat => {
+            let py = groundY + pDat[1];
+            spawnPlatform(startX + pDat[0], py, pDat[2], pDat[3]);
+        });
+        pat.c.forEach(cDat => { spawnCoin(startX + cDat[0], groundY + cDat[1]); });
+        nextGenX += pat.w;
+    }
+
+    function spawnPlatform(x, y, w, type) { 
+        for(let i=0; i<platforms.length; i++) { 
+            if(!platforms[i].active) { 
+                let p = platforms[i];
+                p.active=true; p.x=x; p.y=y; p.w=w; p.h=(type==='float'?30:LOGICAL_HEIGHT); p.type=type; 
+                p.decor = [];
+                p.isDesert = (transitionProgress > 0.5); 
+                
+                let decorCount = Math.floor(w / 100);
+                for(let j=0; j<decorCount; j++) {
+                    let dx = Math.random() * w;
+                    let dtype = Math.random();
+                    let dcolor = '#fff';
+                    if(dtype < 0.4) dcolor = 'rock'; 
+                    else {
+                        if (p.isDesert) {
+                            dcolor = dtype < 0.7 ? 'cactus1' : 'cactus2';
+                        } else {
+                            dcolor = dtype < 0.7 ? '#FF4081' : (dtype < 0.85 ? '#448AFF' : '#FFEB3B'); 
+                        }
+                    }
+                    p.decor.push({ x: dx, color: dcolor, size: 6+Math.random()*8 });
+                }
+                return; 
+            } 
+        } 
+    }
+    function spawnCoin(x, y) { for(let i=0; i<coins.length; i++) { if(!coins[i].active) { coins[i].active=true; coins[i].x=x; coins[i].y=y; return; } } }
+    function spawnParticles(x, y, type) {
+        let count = 0; let limit = (type === "gold") ? 8 : 5;
+        for(let i=0; i<particles.length; i++) {
+            if(!particles[i].active && count < limit) {
+                let p = particles[i]; p.active = true; p.x = x; p.y = y; p.life = 1.0; p.type = type;
+                if (type === "gold") { p.vx = (Math.random()-0.5)*8; p.vy = (Math.random()-0.5)*8; p.color = `hsl(${45+Math.random()*10},100%,50%)`; p.size = 3+Math.random()*3; } 
+                else { p.vx = (Math.random()-0.5)*4; p.vy = Math.random()*-3; p.color = "rgba(255,255,255,0.6)"; p.size = 2+Math.random()*4; }
+                count++;
+            }
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // --- DRAWING WITH LOGICAL SCALING ---
+        ctx.save();
+        ctx.scale(gameScale, gameScale);
+        
+        // From here on, coordinates are 0..LOGICAL_HEIGHT (720)
+        let logicalW = canvas.width / gameScale;
+        let logicalH = LOGICAL_HEIGHT;
+
+        ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, logicalW, logicalH);
+        
+        // 1. MOUNTAINS
+        for(let layer=0; layer<2; layer++) {
+            ctx.fillStyle = layer===0 ? currentColors.mountBack : currentColors.mountFront;
+            let pFactor = layer===0 ? 0.1 : 0.3;
+            
+            mountains.forEach(m => {
+                if(m.layer !== layer) return;
+                let drawX = m.x - (cameraX * pFactor);
+                let drawY = logicalH - cameraY * (pFactor * 0.5); 
+                if (drawX > logicalW || drawX + m.w < 0) return;
+
+                ctx.beginPath();
+                ctx.moveTo(drawX + m.points[0].x, drawY + 200); 
+                for(let k=1; k<m.points.length-1; k++) {
+                    ctx.lineTo(drawX + m.points[k].x, drawY - m.points[k].y);
+                }
+                ctx.lineTo(drawX + m.points[m.points.length-1].x, drawY + 200);
+                ctx.fill();
+            });
+        }
+
+        // 2. Clouds
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        clouds.forEach(c => { 
+            let relativeX = c.x - (cameraX * 0.05);
+            let screenW = logicalW;
+            let drawX = ((relativeX % (screenW + 400)) + (screenW + 400)) % (screenW + 400) - 200;
+            let drawY = c.y - cameraY * 0.1;
+            ctx.beginPath(); ctx.arc(drawX, drawY, c.w/2, 0, Math.PI*2); ctx.arc(drawX + c.w*0.5, drawY + 10, c.w/2.5, 0, Math.PI*2); ctx.arc(drawX - c.w*0.5, drawY + 10, c.w/2.5, 0, Math.PI*2); ctx.fill();
+        });
+
+        if(gameState !== "START") ctx.translate(-cameraX | 0, -cameraY | 0);
+
+        // Birds
+        ctx.strokeStyle = currentColors.ground; ctx.lineWidth = 2; ctx.beginPath();
+        for(let i=0; i<birds.length; i++) { let b=birds[i]; let flyY = Math.sin(animTime*0.2 + b.offset) * 5; let bx = b.x|0; let by = (b.y + flyY)|0; ctx.moveTo(bx, by); ctx.lineTo(bx - 10, by - 5); ctx.moveTo(bx, by); ctx.lineTo(bx + 10, by - 5); }
+        ctx.stroke();
+        
+        // Platforms & Decorations
+        for(let i=0; i<platforms.length; i++) { 
+            let p=platforms[i]; if(p.active) {
+                ctx.fillStyle = currentColors.ground;
+                ctx.fillRect(p.x|0, p.y|0, p.w|0, ((p.type==='float'?40:logicalH-p.y+200))|0);
+                
+                if(p.decor) {
+                    p.decor.forEach(d => {
+                        let dx = p.x + d.x; let dy = p.y;
+                        if(d.color === 'rock') {
+                            ctx.fillStyle = "#555"; ctx.beginPath(); ctx.arc(dx, dy, d.size, Math.PI, 0); ctx.fill();
+                        }
+                    });
+                }
+
+                ctx.fillStyle = currentColors.grass; ctx.fillRect(p.x|0, p.y|0, p.w|0, 20);
+                ctx.fillStyle = currentColors.grassRim; ctx.fillRect(p.x|0, p.y|0, p.w|0, 5);
+
+                if(p.decor) {
+                    p.decor.forEach(d => {
+                        let dx = p.x + d.x; let dy = p.y;
+                        if(d.color !== 'rock') {
+                             if(d.color.startsWith('cactus')) {
+                                ctx.fillStyle = d.color === 'cactus1' ? "#558B2F" : "#827717"; 
+                                ctx.beginPath(); ctx.arc(dx, dy-12, 7, 0, Math.PI*2); ctx.fill();
+                                ctx.beginPath(); ctx.arc(dx-6, dy-16, 5, 0, Math.PI*2); ctx.fill();
+                                ctx.beginPath(); ctx.arc(dx+6, dy-16, 5, 0, Math.PI*2); ctx.fill();
+                             } else {
+                                ctx.fillStyle = "#2E7D32"; 
+                                ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx, dy-10); ctx.stroke(); 
+                                ctx.fillStyle = d.color; 
+                                ctx.beginPath(); ctx.arc(dx, dy-12, 5, 0, Math.PI*2); ctx.fill(); 
+                                ctx.beginPath(); ctx.arc(dx-4, dy-10, 4, 0, Math.PI*2); ctx.fill(); 
+                                ctx.beginPath(); ctx.arc(dx+4, dy-10, 4, 0, Math.PI*2); ctx.fill(); 
+                                ctx.beginPath(); ctx.arc(dx, dy-16, 4, 0, Math.PI*2); ctx.fill(); 
+                             }
+                        }
+                    });
+                }
+            }
+        }
+        
+        // Coins
+        ctx.fillStyle = "#FFD700"; 
+        ctx.strokeStyle = "#DAA520"; 
+        ctx.lineWidth = 2;
+        
+        for(let i=0; i<coins.length; i++) { 
+            let c=coins[i]; 
+            if(c.active) { 
+                let bob = Math.sin(animTime*0.1 + c.bob) * 5; 
+                let cx = c.x; let cy = c.y + bob;
+                ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(cx - 4, cy - 4, 3, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#FFD700"; 
+            } 
+        }
+        
+        drawTurtleOriginal(player.x|0, player.y|0);
+        
+        // Particles
+        for(let i=0; i<particles.length; i++) { 
+            let p = particles[i]; if(p.active) { 
+                ctx.globalAlpha = p.life > 1 ? 1 : p.life; 
+                ctx.fillStyle = p.color; 
+                ctx.beginPath(); 
+                if(p.type === 'confetti') ctx.rect(p.x|0, p.y|0, p.size, p.size);
+                else ctx.arc(p.x|0, p.y|0, p.size, 0, Math.PI*2); 
+                ctx.fill(); 
+                ctx.globalAlpha = 1.0; 
+            } 
+        }
+        
+        ctx.restore();
+    }
+
+    function drawTurtleOriginal(x, y) {
+        ctx.save(); ctx.translate(x + 20, y + 20); 
+        if (!player.facingRight) ctx.scale(-1, 1);
+        if (player.rotation > 0) ctx.rotate(player.rotation * Math.PI / 180);
+        ctx.translate(-(x + 20), -(y + 20));
+        let legOffset = (player.state === "walk") ? Math.sin(animTime * 0.3) * 5 : (player.state === "jump" ? -5 : 0);
+        ctx.fillStyle = "#228B22"; ctx.beginPath(); ctx.arc(x + 10 + legOffset, y + 38, 7, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 30 - legOffset, y + 38, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#32CD32"; ctx.beginPath(); ctx.ellipse(x + 20, y + 22, 22, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#98FB98"; ctx.beginPath(); ctx.ellipse(x + 20, y + 25, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#32CD32"; ctx.beginPath(); ctx.arc(x + 36, y + 15, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x + 38, y + 12, 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "black"; ctx.beginPath(); ctx.arc(x + 40, y + 12, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+    }
+
+    const doJump = (e) => { 
+        // Prevent double jump on touch + click
+        if (e.type === 'touchstart') e.preventDefault(); 
+        if(gameState==="START") startGame(); 
+        else if(gameState==="GAMEOVER") resetGame(); 
+        else if(player.grounded||player.jumpCount<player.maxJumps) { 
+            AudioSys.play('jump'); 
+            player.dy = player.jumpPower; 
+            player.grounded=false; 
+            player.jumpCount++; 
+            spawnParticles(player.x+20, player.y+40, "dust"); 
+            if(player.jumpCount>1) player.rotation=360; 
+        } 
+    };
+    
+    // Unified Input Handler
+    const handleInput = (e) => { 
+        if(e.target.closest('button') || e.target.closest('.icon-btn')) return; 
+        if(e.type === 'keydown' && e.code !== "Space" && e.code !== "ArrowUp") return;
+        if(e.type === 'keydown') e.preventDefault(); 
+        
+        if (gameState === "PLAYING" || gameState === "START" || gameState === "GAMEOVER") doJump(e); 
+    };
+
+    window.addEventListener('mousedown', handleInput); 
+    window.addEventListener('touchstart', handleInput, {passive: false});
+    window.addEventListener('keydown', handleInput);
+
+    init();
+</script>
+</body>
+</html>
