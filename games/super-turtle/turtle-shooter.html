@@ -2,137 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Super Turtle: Infinite Terrain</title>
+    <title>Super Turtle: Elemental Realms</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&family=Titan+One&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background-color: #222; 
-            font-family: 'VT323', monospace; 
-            user-select: none; 
-            -webkit-user-select: none; 
-            touch-action: none; 
-        }
+        body { margin: 0; overflow: hidden; background-color: #222; font-family: 'VT323', monospace; user-select: none; -webkit-user-select: none; touch-action: none; }
         
-        canvas { 
-            display: block; 
-            width: 100%; 
-            height: 100%;
-            background-color: #4FC3F7; 
-        }
+        /* Main Game Canvas Background */
+        canvas#gameCanvas { display: block; width: 100%; height: 100%; background-color: #4FC3F7; }
         
-        #ui-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 100;
-            display: flex; flex-direction: column; align-items: center;
+        /* FIX: Ensure Shop Canvases are Transparent */
+        .shop-canvas-container canvas { background-color: transparent !important; }
+
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; display: flex; flex-direction: column; align-items: center; }
+        
+        /* TOP BAR UI ADAPTATION FOR PHONES */
+        #top-bar { 
+            width: 100%; display: flex; justify-content: space-between; 
+            padding: 2vh 3vw; 
+            padding-top: max(2vh, env(safe-area-inset-top)); 
+            box-sizing: border-box; pointer-events: auto; transition: opacity 0.3s; 
         }
 
-        /* --- HUD (In-Game) --- */
-        #top-bar { 
-            width: 100%; display: flex; 
-            justify-content: space-between; 
-            padding: 2vh 3vw; 
-            box-sizing: border-box; 
-            pointer-events: auto; 
-            transition: opacity 0.3s;
+        #hud { 
+            background: rgba(0,0,0,0.85); padding: 0.8vh 2.5vw; border-radius: 15px; 
+            border: 3px solid #444; border-bottom: 5px solid #222; 
+            color: #fff; font-size: clamp(18px, 4vh, 32px); 
+            display: flex; align-items: center; gap: 15px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px); 
         }
-        
-        #hud {
-            background: rgba(0,0,0,0.85); 
-            padding: 0.8vh 2vw; 
-            border-radius: 15px; 
-            border: 3px solid #444; border-bottom: 5px solid #222;
-            color: #fff; 
-            font-size: clamp(20px, 4vh, 32px); 
-            display: flex; align-items: center; gap: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-        }
-        .score-group { display: flex; align-items: center; gap: 8px; }
-        .label { color: #888; font-size: 0.7em; margin-right: 5px; }
+        .score-group { display: flex; align-items: center; gap: 6px; }
+        .label { color: #888; font-size: 0.7em; margin-right: 3px; }
         .hi-score { color: #FFD700; }
         .curr-score { color: #fff; }
-        
-        .hud-coin {
-            width: clamp(18px, 3vh, 26px); 
-            height: clamp(18px, 3vh, 26px); 
-            background-color: #FFD700; border-radius: 50%; position: relative;
-            border: 2px solid #DAA520; display: inline-block; box-sizing: border-box;
-        }
+        .hud-coin { width: clamp(16px, 3vh, 26px); height: clamp(16px, 3vh, 26px); background-color: #FFD700; border-radius: 50%; position: relative; border: 2px solid #DAA520; display: inline-block; box-sizing: border-box; }
         .hud-coin::after { content: ''; position: absolute; top: 20%; left: 20%; width: 20%; height: 20%; background-color: white; border-radius: 50%; }
-
-        /* --- Toasts --- */
-        #level-toast {
-            position: absolute; top: 18%; width: 100%; 
-            display: flex; justify-content: center;
-            pointer-events: none; z-index: 500;
-        }
         
-        .toast-content {
-            text-align: center;
-            text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
-            opacity: 0; transform: scale(0.8);
+        #menu-coins {
+            position: absolute; top: 3vh; left: 3vw; 
+            top: max(3vh, env(safe-area-inset-top)); 
+            background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 30px;
+            color: #FFD700; font-size: 24px; font-family: 'Titan One', cursive;
+            border: 3px solid #DAA520; display: flex; align-items: center; gap: 8px;
+            pointer-events: auto; z-index: 200; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        #menu-coins span:first-child { 
+            color: #FFF; font-size: 20px; margin-right: 3px; font-family: 'VT323'; letter-spacing: 1px; font-weight: bold; text-transform: uppercase;
         }
 
+        #level-toast { position: absolute; top: 20%; width: 100%; display: flex; justify-content: center; pointer-events: none; z-index: 500; }
+        .toast-content { text-align: center; text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; opacity: 0; transform: scale(0.8); }
         .fade-anim { animation: popIn 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.5) translateY(-30px); }
-            15% { opacity: 1; transform: scale(1.0) translateY(0); }
-            85% { opacity: 1; transform: scale(1.0) translateY(0); }
-            100% { opacity: 0; transform: scale(1.1) translateY(-20px); }
-        }
+        .warning-anim { animation: flashWarn 2s ease-in-out infinite; color: #FF0000 !important; text-shadow: 3px 3px 0px #8B0000, 0 0 20px #FF0000 !important; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.5) translateY(-30px); } 15% { opacity: 1; transform: scale(1.0) translateY(0); } 85% { opacity: 1; transform: scale(1.0) translateY(0); } 100% { opacity: 0; transform: scale(1.1) translateY(-20px); } }
+        @keyframes flashWarn { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
 
-        /* --- Generic Buttons --- */
-        .icon-btn {
-            width: clamp(40px, 8vh, 60px); 
-            height: clamp(40px, 8vh, 60px); 
-            background: #333;
-            border: 3px solid #555; border-radius: 12px; 
-            cursor: pointer; display: flex; justify-content: center; align-items: center;
-            transition: all 0.1s; box-shadow: 0 4px 0 #111;
+        .icon-btn { 
+            width: clamp(44px, 8vh, 60px); height: clamp(44px, 8vh, 60px); 
+            background: #333; border: 3px solid #555; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.1s; box-shadow: 0 4px 0 #111; 
         }
         .icon-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #111; }
         .svg-icon { width: 50%; height: 50%; fill: #ccc; pointer-events: none; }
         .icon-btn:active .svg-icon { fill: #fff; }
 
-        /* --- Screens --- */
-        .screen {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            text-align: center; color: white; 
-            background: rgba(20, 20, 20, 0.95); 
-            padding: 5vh 5vw; 
-            border-radius: 20px;
-            border: 3px solid #444; pointer-events: auto; display: none; 
-            width: 85%; max-width: 450px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+        .screen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; background: rgba(20, 20, 20, 0.95); padding: 4vh 5vw; border-radius: 20px; border: 3px solid #444; pointer-events: auto; display: none; width: 85%; max-width: 450px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); backdrop-filter: blur(10px); }
+        
+        #shop-screen { 
+            max-width: 600px; width: 90%; height: 80vh;
+            display: none; flex-direction: column; 
+            padding: 2vh 3vw;
         }
-
-        /* --- MAIN MENU STYLES --- */
-        #start-screen {
-            background: transparent;
-            border: none; box-shadow: none; backdrop-filter: none;
-            width: 100%; height: 100%; max-width: none;
-            padding: 0; top: 0; left: 0; transform: none;
-            
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: flex-end; 
-            padding-bottom: 5vh; 
-            
-            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            overflow: hidden; 
+        #shop-list { 
+            flex: 1; overflow-y: auto; display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); 
+            gap: 12px; 
+            padding: 5px; margin-bottom: 15px;
+            scrollbar-width: thin; scrollbar-color: #555 #222;
         }
+        .shop-item { 
+            background: #333; border-radius: 12px; padding: 8px; border: 2px solid #555; 
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            transition: transform 0.1s;
+        }
+        .shop-item.equipped { border-color: #64DD17; box-shadow: 0 0 10px rgba(100, 221, 23, 0.3); }
+        .shop-item.locked-item .shop-canvas-container,
+        .shop-item.locked-item .skin-name { filter: grayscale(100%) opacity(0.5); }
+        .shop-canvas-container { width: 80px; height: 60px; margin-bottom: 2px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .skin-name { font-family: 'Titan One', cursive; font-size: 16px; margin-bottom: 4px; color: #fff; }
+        .buy-btn { 
+            width: 100%; padding: 6px 0; border: none; border-radius: 6px; font-family: 'VT323', monospace; font-size: 18px; font-weight: bold; cursor: pointer; 
+            background: #FFD700; color: #222; box-shadow: 0 3px 0 #DAA520; 
+        }
+        .buy-btn:active { transform: translateY(3px); box-shadow: 0 0 0; }
+        .buy-btn.locked { background: #FFD700; }
+        .buy-btn.owned { background: #4FC3F7; color: #0277BD; box-shadow: 0 3px 0 #0277BD; }
+        .buy-btn.equipped-btn { background: #64DD17; color: #1B5E20; box-shadow: none; cursor: default; transform: translateY(3px); }
+        .buy-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+        #start-screen { background: transparent; border: none; box-shadow: none; backdrop-filter: none; width: 100%; height: 100%; max-width: none; padding: 0; top: 0; left: 0; transform: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding-bottom: 5vh; transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); overflow: hidden; }
         #start-screen.slide-out { transform: translateY(150%); }
+        .menu-logo { font-family: 'Titan One', cursive; font-size: clamp(60px, 15vw, 130px); line-height: 0.85; color: #FF5252; filter: drop-shadow(0 10px 0px rgba(0,0,0,0.5)) drop-shadow(0 20px 20px rgba(0,0,0,0.6)); transform: rotate(-3deg); position: relative; z-index: 20; margin-top: 8vh; margin-bottom: auto; text-align: center; }
+        .logo-letter { display: inline-block; -webkit-text-stroke: clamp(4px, 1.2vw, 8px) white; paint-order: stroke fill; animation: letterWave 2s ease-in-out infinite; }
+        .logo-letter.blue { color: #4FC3F7; font-size: 0.65em; }
+        @keyframes letterWave { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        .logo-letter:nth-child(1) { animation-delay: 0.0s; } .logo-letter:nth-child(2) { animation-delay: 0.1s; } .logo-letter:nth-child(3) { animation-delay: 0.2s; }
+        .logo-letter:nth-child(4) { animation-delay: 0.3s; } .logo-letter:nth-child(5) { animation-delay: 0.4s; } .logo-letter:nth-child(6) { animation-delay: 0.5s; }
+        
+        .menu-center { display: flex; flex-direction: column; align-items: center; gap: 15px; position: relative; z-index: 10; padding-bottom: 8vh; margin-bottom: 0; width: 100%; }
+        .menu-btn-red { 
+            font-family: 'Titan One', cursive; font-size: clamp(24px, 6vw, 42px); 
+            color: white; background: linear-gradient(to bottom, #FF5252, #D32F2F); 
+            padding: 12px 0; width: 80%; max-width: 300px; /* Responsive width */
+            display: flex; justify-content: center; align-items: center; 
+            border: none; border-radius: 60px; border-bottom: 6px solid #B71C1C; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.1s, border-width 0.1s; text-transform: uppercase; -webkit-text-stroke: 1px rgba(0,0,0,0.2); 
+        }
+        .menu-btn-red:active { transform: translateY(6px); border-bottom-width: 0px; box-shadow: 0 0 0; }
 
-        /* --- CUTE TURTLE CSS ART --- */
+        h1 { font-size: clamp(32px, 8vw, 64px); margin-bottom: 2vh; color: #4FC3F7; text-shadow: 0 0 10px rgba(79, 195, 247, 0.5); line-height: 1.1; margin-top: 0; font-family: 'VT323', monospace; }
+        
+        /* DEATH MESSAGE STYLING */
+        #go-msg { 
+            font-family: 'VT323', monospace; 
+            letter-spacing: -2px; 
+            font-weight: normal; 
+            font-size: clamp(28px, 9vw, 54px); 
+            text-shadow: 4px 4px 0 #000;
+            white-space: nowrap; 
+            margin: 0 auto 2vh auto;
+            line-height: 1;
+        }
+
+        #game-over-screen {
+            width: fit-content; 
+            width: -moz-fit-content;
+            min-width: 250px;
+            max-width: 90%;
+            padding: 4vh 6vw;
+        }
+
+        p { font-size: clamp(16px, 4vw, 24px); line-height: 1.4; color: #aaa; margin-bottom: 3vh; letter-spacing: 1px; }
+        button.action-btn { padding: 2vh 0; width: 100%; font-family: inherit; font-size: clamp(20px, 5vw, 32px); background: linear-gradient(to bottom, #4CAF50, #2E7D32); color: #fff; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0.8vh 0 #1B5E20; margin-top: 2vh; font-weight: bold; transition: transform 0.1s; }
+        button.action-btn:active { transform: translateY(0.8vh); box-shadow: 0 0 0; }
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 2vh 0; font-size: clamp(18px, 4vw, 24px); color: #fff; background: #333; padding: 1.5vh; border-radius: 10px; border: 2px solid #444; }
+
+        /* --- CUTE TURTLE CSS ART (Separated for Animation Fix) --- */
         .turtle-container {
+            /* Positioning Logic ONLY */
             position: absolute;
             top: 48%; left: 50%;
             transform: translate(-50%, -50%);
             width: 300px; height: 300px;
             z-index: 5;
             pointer-events: none;
+        }
+        
+        .turtle-anim-wrapper {
+            /* Animation Logic ONLY */
+            width: 100%; height: 100%;
             animation: turtleFloat 3s ease-in-out infinite;
         }
 
@@ -210,10 +237,11 @@
             z-index: 5;
             box-shadow: inset 0 -5px 0 rgba(0,0,0,0.1);
         }
-        .f-front-l { top: 90px; left: -20px; transform: rotate(45deg); animation: swimLeft 2s ease-in-out infinite; }
-        .f-front-r { top: 90px; right: -20px; transform: rotate(-45deg); animation: swimRight 2s ease-in-out infinite; }
-        .f-back-l { bottom: 20px; left: 20px; width: 50px; height: 60px; transform: rotate(20deg); background: #4CAF50; z-index: 1; }
-        .f-back-r { bottom: 20px; right: 20px; width: 50px; height: 60px; transform: rotate(-20deg); background: #4CAF50; z-index: 1; }
+        /* Arms/Legs joined closer to body (Tighter offsets) */
+        .f-front-l { top: 90px; left: -10px; transform: rotate(45deg); animation: swimLeft 2s ease-in-out infinite; }
+        .f-front-r { top: 90px; right: -10px; transform: rotate(-45deg); animation: swimRight 2s ease-in-out infinite; }
+        .f-back-l { bottom: 20px; left: 30px; width: 50px; height: 60px; transform: rotate(20deg); background: #4CAF50; z-index: 1; }
+        .f-back-r { bottom: 20px; right: 30px; width: 50px; height: 60px; transform: rotate(-20deg); background: #4CAF50; z-index: 1; }
 
         .t-tail {
             position: absolute; bottom: 0px; left: 50%; transform: translateX(-50%);
@@ -224,80 +252,87 @@
             z-index: 1;
         }
 
-        @keyframes turtleFloat { 0%, 100% { transform: translate(-50%, -50%) translateY(0); } 50% { transform: translate(-50%, -50%) translateY(-20px); } }
+        /* Fixed Animation Definition (No Translates) */
+        @keyframes turtleFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
         @keyframes swimLeft { 0%, 100% { transform: rotate(45deg); } 50% { transform: rotate(30deg); } }
         @keyframes swimRight { 0%, 100% { transform: rotate(-45deg); } 50% { transform: rotate(-30deg); } }
         @keyframes blink { 0%, 96%, 100% { transform: scaleY(1); } 98% { transform: scaleY(0.1); } }
 
+        /* PHONE SPECIFIC ADJUSTMENTS */
+        @media (max-width: 600px) { 
+            .menu-logo { margin-top: 15vh; font-size: clamp(50px, 18vw, 90px); } 
+            .menu-center { padding-bottom: 12vh; gap: 12px; } 
 
-        /* --- LOGO --- */
-        .menu-logo {
-            font-family: 'Titan One', cursive;
-            font-size: clamp(70px, 15vw, 130px);
-            line-height: 0.85; color: #FF5252;
-            filter: drop-shadow(0 10px 0px rgba(0,0,0,0.5)) drop-shadow(0 20px 20px rgba(0,0,0,0.6));
-            transform: rotate(-3deg);
-            position: relative; z-index: 20;
-            margin-top: 8vh;
-            margin-bottom: auto;
-            text-align: center;
-        }
-        .logo-letter {
-            display: inline-block;
-            -webkit-text-stroke: clamp(4px, 1.2vw, 8px) white;
-            paint-order: stroke fill;
-            animation: letterWave 2s ease-in-out infinite;
-        }
-        .logo-letter.blue { color: #4FC3F7; font-size: 0.65em; }
-        @keyframes letterWave { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        .logo-letter:nth-child(1) { animation-delay: 0.0s; } .logo-letter:nth-child(2) { animation-delay: 0.1s; } .logo-letter:nth-child(3) { animation-delay: 0.2s; }
-        .logo-letter:nth-child(4) { animation-delay: 0.3s; } .logo-letter:nth-child(5) { animation-delay: 0.4s; } .logo-letter:nth-child(6) { animation-delay: 0.5s; }
+            /* TURTLE VISIBILITY FIX: 
+               Moved top to 60% to place it BEHIND the Play button area. 
+               scale(0.65) reduces size for mobile.
+            */
+            .turtle-container { 
+                width: 300px !important; height: 300px !important; 
+                top: 60% !important; left: 50% !important;
+                transform: translate(-50%, -50%) scale(0.65) !important; 
+                margin-top: 0;
+            }
 
-        /* --- BUTTONS --- */
-        .menu-center {
-            display: flex; flex-direction: column; align-items: center; gap: 20px;
-            position: relative; z-index: 10;
-            padding-bottom: 10vh; 
-            margin-bottom: 0;
-        }
-
-        .menu-btn-red {
-            font-family: 'Titan One', cursive;
-            font-size: clamp(28px, 6vw, 42px); color: white;
-            background: linear-gradient(to bottom, #FF5252, #D32F2F);
-            padding: 15px 0; width: 280px;
-            display: flex; justify-content: center; align-items: center;
-            border: none; border-radius: 60px; border-bottom: 8px solid #B71C1C; 
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            cursor: pointer; transition: transform 0.1s, border-width 0.1s;
-            text-transform: uppercase; -webkit-text-stroke: 1px rgba(0,0,0,0.2);
-        }
-        .menu-btn-red:active { transform: translateY(8px); border-bottom-width: 0px; box-shadow: 0 0 0; }
-
-        @media (max-width: 600px) {
-            .menu-logo { margin-top: 10vh; font-size: clamp(90px, 24vw, 150px); }
+            /* SHOP & SETTINGS UI FIXES:
+               1. width: 88% -> Creates bleeding space (approx 6% on sides).
+               2. top: 55% -> Pushes modal down to avoid top overlap.
+               3. height: 72vh -> Reduces height so top doesn't overlap Coins UI.
+            */
+            .screen { width: 88%; box-sizing: border-box; padding: 2vh 4vw; }
             
-            /* FIX FOR MOBILE: Correct scaling for the cute turtle */
-            .turtle-container { width: 300px; height: 300px; top: 45%; transform: translate(-50%, -50%) scale(0.85); }
+            #shop-screen { 
+                height: 72vh; 
+                top: 55%; 
+                padding: 15px 10px; 
+            }
             
-            .menu-center { width: 100%; gap: 15px; padding-bottom: 12vh; z-index: 15; }
-            .menu-btn-red { width: 85%; max-width: 350px; font-size: 32px; padding: 12px 0; }
+            #shop-list { 
+                grid-template-columns: 1fr 1fr; /* Force 2 columns */
+                gap: 10px;
+            }
+            .shop-item { padding: 5px; }
+            .shop-canvas-container { height: 50px; } 
+            .skin-name { font-size: 14px; }
+
+            /* SETTINGS SCALING */
+            #menu-screen h1 { font-size: 40px; margin-bottom: 2vh; }
+            .toggle-row { padding: 10px; font-size: 18px; margin: 1vh 0; }
+
+            /* DEATH MESSAGE FIX */
+            #go-msg { font-size: clamp(32px, 10vw, 48px); margin-bottom: 1vh; white-space: normal; line-height: 0.9; }
+            #game-over-screen { padding: 3vh 6vw; width: 80%; }
+            #game-over-screen h1 { margin-bottom: 10px; }
+            #game-over-screen div { margin-bottom: 15px; font-size: 20px; }
+
+            h1 { font-size: 36px; margin-bottom: 1vh; }
         }
 
-        h1 { font-size: clamp(32px, 8vw, 64px); margin-bottom: 2vh; color: #4FC3F7; text-shadow: 0 0 10px rgba(79, 195, 247, 0.5); line-height: 1.1; margin-top: 0; font-family: 'VT323', monospace; }
-        p { font-size: clamp(16px, 4vw, 24px); line-height: 1.4; color: #aaa; margin-bottom: 3vh; letter-spacing: 1px; }
-        button.action-btn { padding: 2vh 0; width: 100%; font-family: inherit; font-size: clamp(20px, 5vw, 32px); background: linear-gradient(to bottom, #4CAF50, #2E7D32); color: #fff; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 0.8vh 0 #1B5E20; margin-top: 2vh; font-weight: bold; transition: transform 0.1s; }
-        button.action-btn:active { transform: translateY(0.8vh); box-shadow: 0 0 0; }
-        .toggle-row { display: flex; justify-content: space-between; align-items: center; margin: 2vh 0; font-size: clamp(18px, 4vw, 24px); color: #fff; background: #333; padding: 1.5vh; border-radius: 10px; border: 2px solid #444; }
+        /* LANDSCAPE PHONE ADJUSTMENTS (SHORT HEIGHT) */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .menu-logo { font-size: 60px; margin-top: 5vh; }
+            .turtle-container { display: none; } 
+            .menu-center { flex-direction: row; justify-content: center; padding-bottom: 2vh; }
+            .menu-btn-red { width: 150px; font-size: 20px; }
+            #shop-screen { height: 95vh; flex-direction: row; }
+            #shop-list { height: 100%; width: 70%; grid-template-columns: repeat(3, 1fr); }
+            .action-btn { width: 25%; height: fit-content; align-self: center; }
+        }
     </style>
 </head>
 <body>
 
     <div id="ui-layer">
+        <div id="menu-coins" style="display: flex;">
+            <span>TOTAL</span>
+            <div class="hud-coin" style="width: 24px; height: 24px;"></div>
+            <span id="total-coins-val">0</span>
+        </div>
+
         <div id="top-bar" style="opacity: 0;">
             <div id="hud">
                 <div class="score-group"><span class="label">HI</span><span id="hi-val" class="hi-score">0</span></div>
-                <div class="score-group" style="border-left: 2px solid #444; padding-left: 15px;">
+                <div class="score-group" style="border-left: 2px solid #444; padding-left: 10px;">
                     <div class="hud-coin"></div><span id="score-val" class="curr-score">0</span>
                 </div>
             </div>
@@ -310,81 +345,121 @@
                 </div>
             </div>
         </div>
-
+        
         <div id="level-toast"><div class="toast-content" id="toast-inner"></div></div>
-
+        
         <div id="start-screen" class="screen" style="display: flex;">
             <div class="menu-logo">
                 <div class="logo-line"><span class="logo-letter">S</span><span class="logo-letter">U</span><span class="logo-letter">P</span><span class="logo-letter">E</span><span class="logo-letter">R</span></div>
                 <div class="logo-line"><span class="logo-letter blue">T</span><span class="logo-letter blue">U</span><span class="logo-letter blue">R</span><span class="logo-letter blue">T</span><span class="logo-letter blue">L</span><span class="logo-letter blue">E</span></div>
             </div>
-            
+            <div style="flex:1;"></div> 
+
             <div class="turtle-container">
-                <div class="t-flipper f-back-l"></div>
-                <div class="t-flipper f-back-r"></div>
-                <div class="t-tail"></div>
-                <div class="t-shell"></div>
-                <div class="t-flipper f-front-l"></div>
-                <div class="t-flipper f-front-r"></div>
-                <div class="t-head">
-                    <div class="t-face">
-                        <div class="t-eye left"><div class="t-pupil"></div></div>
-                        <div class="t-eye right"><div class="t-pupil"></div></div>
-                        <div class="t-blush left"></div>
-                        <div class="t-blush right"></div>
-                        <div class="t-smile"></div>
+                <div class="turtle-anim-wrapper"> <div class="t-flipper f-back-l"></div>
+                    <div class="t-flipper f-back-r"></div>
+                    <div class="t-tail"></div>
+                    <div class="t-shell"></div>
+                    <div class="t-flipper f-front-l"></div>
+                    <div class="t-flipper f-front-r"></div>
+                    <div class="t-head">
+                        <div class="t-face">
+                            <div class="t-eye left"><div class="t-pupil"></div></div>
+                            <div class="t-eye right"><div class="t-pupil"></div></div>
+                            <div class="t-blush left"></div>
+                            <div class="t-blush right"></div>
+                            <div class="t-smile"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="menu-center">
                 <button id="btn-play" class="menu-btn-red" onclick="triggerStart()">PLAY</button>
-                <button class="menu-btn-red" onclick="">SHOP</button>
+                <button class="menu-btn-red" onclick="openShop()">SHOP</button>
                 <button class="menu-btn-red" onclick="toggleMenu()">SETTINGS</button>
             </div>
         </div>
 
-        <div id="pause-screen" class="screen">
-            <h1>PAUSED</h1>
-            <button class="action-btn" onclick="togglePause()">RESUME</button>
-            <button class="action-btn" style="background: #444; color: #fff; box-shadow: 0 0.8vh 0 #222;" onclick="goToMenu()">MAIN MENU</button>
-            <button class="action-btn" style="background: #333; color: #aaa; box-shadow: 0 0.8vh 0 #111;" onclick="toggleMenu()">SETTINGS</button>
+        <div id="shop-screen" class="screen">
+            <h1>TURTLE SKINS</h1>
+            <div id="shop-list"></div>
+            <button class="action-btn" onclick="closeShop()" style="background: #444;">BACK</button>
         </div>
-        <div id="menu-screen" class="screen">
-            <h1>SETTINGS</h1>
-            <div class="toggle-row">
-                <span>SOUND & MUSIC</span>
-                <div class="icon-btn" id="sound-toggle" onclick="toggleSound()">
-                    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06 c2.89,0.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-0.91,7-4.49,7-8.77S18.01,4.14,14,3.23z"/></svg>
-                </div>
-            </div>
-            <button class="action-btn" onclick="closeMenu()" style="background: #444; color: #fff; box-shadow: 0 0.8vh 0 #222;">CLOSE</button>
-        </div>
-        <div id="game-over-screen" class="screen">
-            <h1 style="color: #FF5252;">CRASHED!</h1>
-            <div style="margin-bottom: 20px; font-size: clamp(20px, 5vw, 28px);">SCORE: <span id="final-score" style="color: #FFD700;">0</span></div>
-            <button class="action-btn" onclick="resetGame()">RUN AGAIN</button>
-            <button class="action-btn" style="background: #444; color: #fff; box-shadow: 0 0.8vh 0 #222;" onclick="goToMenu()">MAIN MENU</button>
-        </div>
-    </div>
 
+        <div id="pause-screen" class="screen"><h1>PAUSED</h1><button class="action-btn" onclick="togglePause()">RESUME</button><button class="action-btn" style="background: #444;" onclick="goToMenu()">MAIN MENU</button><button class="action-btn" style="background: #333; color: #aaa;" onclick="toggleMenu()">SETTINGS</button></div>
+        <div id="menu-screen" class="screen"><h1>SETTINGS</h1><div class="toggle-row"><span>SOUND & MUSIC</span><div class="icon-btn" id="sound-toggle" onclick="toggleSound()"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06 c2.89,0.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-0.91,7-4.49,7-8.77S18.01,4.14,14,3.23z"/></svg></div></div><button class="action-btn" onclick="closeMenu()" style="background: #444;">CLOSE</button></div>
+        <div id="game-over-screen" class="screen"><h1 id="go-msg" style="color: #FF5252;">CRASHED!</h1><div style="margin-bottom: 20px; font-size: clamp(20px, 5vw, 28px);">SCORE: <span id="final-score" style="color: #FFD700;">0</span></div><button class="action-btn" onclick="resetGame()">RUN AGAIN</button><button class="action-btn" style="background: #444;" onclick="goToMenu()">MAIN MENU</button></div>
+    </div>
     <canvas id="gameCanvas"></canvas>
 
 <script>
-    // FIX: Using alpha: false is key for performance and avoiding 'grey' ghosting from CSS bg
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d', { alpha: false }); 
-    
     const scoreEl = document.getElementById('score-val');
     const hiScoreEl = document.getElementById('hi-val');
     const finalScoreEl = document.getElementById('final-score');
     const toastInner = document.getElementById('toast-inner'); 
-    const screens = { start: document.getElementById('start-screen'), pause: document.getElementById('pause-screen'), menu: document.getElementById('menu-screen'), gameover: document.getElementById('game-over-screen') };
+    const totalCoinsEl = document.getElementById('total-coins-val');
+    const goMsgEl = document.getElementById('go-msg');
+    const screens = { start: document.getElementById('start-screen'), pause: document.getElementById('pause-screen'), menu: document.getElementById('menu-screen'), gameover: document.getElementById('game-over-screen'), shop: document.getElementById('shop-screen') };
     const soundToggleBtn = document.getElementById('sound-toggle');
     const topBar = document.getElementById('top-bar');
+    const menuCoinsDisplay = document.getElementById('menu-coins');
 
     const LOGICAL_HEIGHT = 720;
     let gameScale = 1.0;
+    let ignoreInput = false; 
+
+    const GO_MESSAGES = [
+        "SHELL SHOCKED!", "TURTALLY WRECKED!", "HARD SHELL, BAD LUCK!",
+        "TOO FAST FOR A TURTLE!", "YOU CRACKED UNDER PRESSURE!",
+        "FLIPPED OUT!", "SLOW DOWN... OR NOT!", "TOTAL DISASTER!",
+        "OOPS! A TURTLE MESS!", "CRASHED & BURNED!", "SHELL WE TRY AGAIN?",
+        "OH SNAP!", "TURTLE DOWN!", "A LITTLE TOO RECKLESS?"
+    ];
+
+    let totalCoins = parseInt(localStorage.getItem('st_totalCoins')) || 0;
+    let unlockedSkins = JSON.parse(localStorage.getItem('st_unlockedSkins')) || ['classic'];
+    let currentSkinId = localStorage.getItem('st_currentSkin') || 'classic';
+
+    function saveData() {
+        localStorage.setItem('st_totalCoins', totalCoins);
+        localStorage.setItem('st_unlockedSkins', JSON.stringify(unlockedSkins));
+        localStorage.setItem('st_currentSkin', currentSkinId);
+        updateUI();
+    }
+
+    function updateUI() {
+        totalCoinsEl.innerText = totalCoins;
+    }
+
+    const SKINS = [
+        { id: 'classic', name: 'Classic', cost: 0, shell: '#228B22', body: '#32CD32', belly: '#98FB98' },
+        { id: 'magma', name: 'Magma', cost: 50, shell: '#BF360C', body: '#FF5722', belly: '#FFAB91' }, 
+        { id: 'glacial', name: 'Glacial', cost: 100, shell: '#01579B', body: '#0288D1', belly: '#B3E5FC' },
+        { id: 'shadow', name: 'Shadow', cost: 250, shell: '#212121', body: '#424242', belly: '#616161' }, 
+        { id: 'midas', name: 'Midas', cost: 1000, shell: '#FF6F00', body: '#FFD700', belly: '#FFF59D' },
+        { id: 'mecha', name: 'Mecha', cost: 500, shell: '#37474F', body: '#90A4AE', belly: '#CFD8DC' },
+        { id: 'toxic', name: 'Toxic', cost: 350, shell: '#1B5E20', body: '#000000', belly: '#64DD17' },
+        { id: 'candy', name: 'Candy', cost: 150, shell: '#F48FB1', body: '#CE93D8', belly: '#F8BBD0' },
+        
+        // REDESIGNED SKINS
+        { id: 'vampire', name: 'Vampire', cost: 400, shell: '#1A1A1A', body: '#E0F7FA', belly: '#B71C1C' }, 
+        { id: 'bumble', name: 'Bumblebee', cost: 200, shell: '#212121', body: '#FFEB3B', belly: '#FDD835' }, 
+        { id: 'camo', name: 'Camo', cost: 300, shell: '#33691E', body: '#8D6E63', belly: '#C5E1A5' }, 
+        { id: 'bubblegum', name: 'Bubblegum', cost: 250, shell: '#FFB7B2', body: '#A9DEF9', belly: '#E2F0CB' }, 
+
+        { id: 'ruby', name: 'Ruby', cost: 600, shell: '#880E4F', body: '#C2185B', belly: '#F48FB1' },
+        { id: 'sapphire', name: 'Sapphire', cost: 600, shell: '#0D47A1', body: '#1565C0', belly: '#64B5F6' },
+        { id: 'emerald', name: 'Emerald', cost: 600, shell: '#004D40', body: '#00897B', belly: '#80CBC4' },
+        { id: 'amethyst', name: 'Amethyst', cost: 700, shell: '#4A148C', body: '#7B1FA2', belly: '#E1BEE7' },
+        { id: 'nuke', name: 'Nuke', cost: 800, shell: '#1B5E20', body: '#76FF03', belly: '#CCFF90' },
+        { id: 'coffee', name: 'Espresso', cost: 150, shell: '#3E2723', body: '#5D4037', belly: '#D7CCC8' },
+
+        // PREMIUM SKIN
+        { id: 'celestial', name: 'CELESTIAL', cost: 5000, shell: '#311B92', body: '#6200EA', belly: '#B388FF' }
+    ];
 
     const SVG_SOUND_ON = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06 c2.89,0.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-0.91,7-4.49,7-8.77S18.01,4.14,14,3.23z"/></svg>`;
     const SVG_SOUND_OFF = `<svg class="svg-icon" viewBox="0 0 24 24"><path d="M16.5,12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45,2.45C16.41,12.5,16.5,12.26,16.5,12z M19,12c0,1.72-0.63,3.3-1.66,4.52l1.44,1.44C20.4,16.23,21,14.2,21,12c0-4.28-2.99-7.86-7-8.77v2.06C16.89,6.15,19,8.83,19,12z M4.27,3L3,4.27L7.73,9H3v6h4l5,5v-6.73l4.25,4.25c-0.67,0.52-1.42,0.93-2.25,1.18v2.06c1.38-0.31,2.63-0.95,3.69-1.81L19.73,21L21,19.73l-9-9L4.27,3z M12,4L9.91,6.09L12,8.18V4z"/></svg>`;
@@ -394,7 +469,7 @@
         melody: [261.6, 329.6, 392.0, 493.9, 523.3, 392.0, 329.6, 392.0], 
         init: function() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
         play: function(type) {
-            if (!this.enabled || !this.ctx || this.activeVoices > 4) return;
+            if (!this.enabled || !this.ctx || this.activeVoices > 5) return;
             const osc = this.ctx.createOscillator(); const gain = this.ctx.createGain();
             osc.connect(gain); gain.connect(this.ctx.destination); const now = this.ctx.currentTime;
             this.activeVoices++;
@@ -402,6 +477,14 @@
             else if (type === 'coin') { osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(1800, now+0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.3); osc.start(now); osc.stop(now+0.3); } 
             else if (type === 'die') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(50, now+0.4); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now+0.4); osc.start(now); osc.stop(now+0.4); } 
             else if (type === 'click') { osc.type = 'triangle'; osc.frequency.setValueAtTime(600, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.05); osc.start(now); osc.stop(now+0.05); }
+            else if (type === 'confetti') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            }
             osc.onended = () => { this.activeVoices--; osc.disconnect(); gain.disconnect(); };
         },
         startMusic: function() { if(this.bgmTimer) return; this.playNextNote(); },
@@ -422,15 +505,18 @@
     };
 
     const PALETTES = {
-        green: { skyTop: "#4FC3F7", skyBottom: "#E1F5FE", ground: "#5D4037", grass: "#64DD17", grassRim: "#AEEA00", mountBack: "#546E7A", mountFront: "#78909C" },
-        desert: { skyTop: "#FFAB91", skyBottom: "#FFF59D", ground: "#C59D76", grass: "#FFECB3", grassRim: "#FFD54F", mountBack: "#5D4037", mountFront: "#8D6E63" }
+        green: { skyTop: "#4FC3F7", skyBottom: "#E1F5FE", ground: "#5D4037", grass: "#64DD17", grassRim: "#AEEA00", mountBack: "#546E7A", mountFront: "#78909C", cloudBody: "#FFFFFF", cloudShadow: "#000000" },
+        desert: { skyTop: "#FFAB91", skyBottom: "#FFF59D", ground: "#C59D76", grass: "#FFECB3", grassRim: "#FFD54F", mountBack: "#5D4037", mountFront: "#8D6E63", cloudBody: "#FFFDE7", cloudShadow: "#5D4037" },
+        iceage: { skyTop: "#B3E5FC", skyBottom: "#E1F5FE", ground: "#546E7A", grass: "#FFFFFF", grassRim: "#E0F7FA", mountBack: "#90A4AE", mountFront: "#B0BEC5", cloudBody: "#E1F5FE", cloudShadow: "#455A64" },
+        volcanic: { skyTop: "#370000", skyBottom: "#FF5722", ground: "#212121", grass: "#D50000", grassRim: "#FF3D00", mountBack: "#3E2723", mountFront: "#5D4037", cloudBody: "#9E9E9E", cloudShadow: "#212121" }
     };
     
     let currentColors = { ...PALETTES.green }; 
     let targetTheme = 'green';
+    let lastTheme = 'green'; 
     let transitionProgress = 0.0;
     let confettiTriggered = false;
-    let level2Announced = false;
+    let warningTriggered = false;
 
     let gameState = "START"; let prevGameState = "START";
     let score = 0; let highScore = localStorage.getItem('st_highscore') || 0;
@@ -440,6 +526,12 @@
 
     const platforms = []; const coins = []; const particles = [];
     const clouds = []; const birds = []; const mountains = [];
+    const volcanoes = []; 
+    const obstacles = []; 
+    
+    let lastObstacleX = -1000;
+    let volcanoesSpawned = 0; 
+    let nextCloudX = 0;
 
     const player = { x: 0, y: 0, w: 40, h: 40, dx: 0, dy: 0, speed: 5.5, jumpPower: -17, gravity: 0.9, grounded: false, state: "idle", facingRight: true, jumpCount: 0, maxJumps: 2, rotation: 0, patrolDir: 1 };
 
@@ -456,9 +548,73 @@
         { w: 1200, p: [[0,0,1200,'ground'], [300,-100,150,'float'], [550,-200,150,'float'], [800,-100,150,'float']], c: [[375,-150], [625,-250], [875,-150]] }
     ];
 
-    let isMenuJumping = false;
-    let menuDy = 0;
-    let menuJumpTimer = 0;
+    function openShop() {
+        AudioSys.play('click');
+        screens.start.style.display = 'none';
+        screens.shop.style.display = 'flex';
+        gameState = "SHOP"; // SET STATE TO SHOP
+        renderShop();
+    }
+
+    function closeShop() {
+        AudioSys.play('click');
+        screens.shop.style.display = 'none';
+        screens.start.style.display = 'flex';
+        gameState = "START"; // SET STATE BACK TO START
+    }
+
+    function renderShop() {
+        const list = document.getElementById('shop-list');
+        list.innerHTML = '';
+        SKINS.sort((a,b) => a.cost - b.cost);
+        SKINS.forEach(skin => {
+            const isOwned = unlockedSkins.includes(skin.id);
+            const isEquipped = currentSkinId === skin.id;
+            const item = document.createElement('div');
+            // ADDED: Locked class for visuals
+            item.className = `shop-item ${isEquipped ? 'equipped' : ''} ${!isOwned ? 'locked-item' : ''}`;
+            const cvsId = `skin-cvs-${skin.id}`;
+            item.innerHTML = `<div class="shop-canvas-container"><canvas id="${cvsId}" width="100" height="80"></canvas></div><div class="skin-name">${skin.name}</div><button class="buy-btn ${isEquipped?'equipped-btn':(isOwned?'owned':'locked')}" onclick="handleShopAction('${skin.id}')">${isEquipped ? 'EQUIPPED' : (isOwned ? 'EQUIP' : skin.cost)}</button>`;
+            list.appendChild(item);
+            setTimeout(() => { const sCtx = document.getElementById(cvsId).getContext('2d'); drawShopSkin(sCtx, skin); }, 0);
+        });
+    }
+
+    window.handleShopAction = function(id) {
+        AudioSys.play('click');
+        const skin = SKINS.find(s => s.id === id);
+        if(unlockedSkins.includes(id)) { currentSkinId = id; saveData(); renderShop(); } 
+        else { if(totalCoins >= skin.cost) { totalCoins -= skin.cost; unlockedSkins.push(id); saveData(); renderShop(); AudioSys.play('coin'); } else { AudioSys.play('die'); } }
+    }
+
+    function drawShopSkin(ctx, skin) {
+        ctx.clearRect(0,0,100,80);
+        ctx.save();
+        ctx.setLineDash([]); 
+        ctx.strokeStyle = "rgba(0,0,0,0)";
+        ctx.lineWidth = 0;
+        
+        // REDUCED SCALE TO 1.1 AND ADJUSTED TRANSLATE TO PREVENT CROPPING
+        ctx.translate(35, 15);
+        ctx.scale(1.1, 1.1);
+        let x = 0; let y = 0;
+        ctx.fillStyle = skin.shell; 
+        ctx.beginPath(); ctx.arc(x + 10, y + 38, 7, 0, Math.PI * 2); ctx.fill(); 
+        ctx.beginPath(); ctx.arc(x + 30, y + 38, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = skin.body; 
+        ctx.beginPath(); ctx.ellipse(x + 20, y + 22, 22, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = skin.belly; 
+        ctx.beginPath(); ctx.ellipse(x + 20, y + 25, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = skin.body; 
+        ctx.beginPath(); ctx.arc(x + 36, y + 15, 13, 0, Math.PI * 2); ctx.fill();
+
+        ctx.fillStyle = "white"; 
+        ctx.beginPath(); ctx.arc(x + 40, y + 12, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "black"; 
+        ctx.beginPath(); ctx.arc(x + 42, y + 12, 2.5, 0, Math.PI * 2); ctx.fill();
+        
+        ctx.restore();
+    }
 
     function spawnPlatform(x, y, w, type) {
         let p = platforms.find(i => !i.active);
@@ -470,251 +626,260 @@
             for(let i=0; i<count; i++) {
                 let dx = Math.random() * w;
                 let isRock = Math.random() > 0.7;
-                let color = isRock ? 'rock' : (targetTheme === 'desert' ? (Math.random()>0.5?'cactus1':'cactus2') : `hsl(${90+Math.random()*40}, 60%, 45%)`);
+                let color = 'rock';
+                if (isRock) { color = 'rock'; } else if (targetTheme === 'desert') { color = Math.random()>0.5?'cactus1':'cactus2'; } else if (targetTheme === 'iceage') { color = `hsl(190, 80%, 80%)`; } else if (targetTheme === 'volcanic') { color = `hsl(0, 100%, 50%)`; } else { color = `hsl(${90+Math.random()*40}, 60%, 45%)`; }
                 p.decor.push({ x: dx, size: 3 + Math.random()*4, color: color });
+            }
+        }
+        
+        if (targetTheme !== 'green' && Math.random() > 0.6) { 
+            if (w > 500) {
+                let safeMargin = 100;
+                let obsX = x + safeMargin + Math.random() * (w - safeMargin*2);
+                if (obsX > lastObstacleX + 900) { 
+                    let obsType = 'cactus';
+                    let obsH = 40;
+                    if (targetTheme === 'iceage') obsType = 'ice';
+                    if (targetTheme === 'volcanic') { obsType = 'lava'; obsH = 60; } 
+                    obstacles.push({ active: true, x: obsX, y: y, w: 30, h: obsH, type: obsType });
+                    lastObstacleX = obsX; 
+                }
             }
         }
     }
 
     function spawnParticles(x, y, type) {
         let count = type === 'dust' ? 5 : 10;
+        if (type === 'snow') count = 1; 
         for (let i = 0; i < count; i++) {
-            let p = particles.find(pt => !pt.active);
-            if (!p) { p = {}; particles.push(p); }
+            let p = particles.find(pt => !pt.active); if (!p) { p = {}; particles.push(p); }
             p.active = true; p.x = x; p.y = y; p.life = 1.0; p.type = type;
-            if (type === 'dust') {
-                p.vx = (Math.random() - 0.5) * 3; p.vy = -1 - Math.random() * 2;
-                p.color = "rgba(255,255,255,0.5)"; p.size = 2 + Math.random() * 3;
-            } else if (type === 'gold') {
-                p.vx = (Math.random() - 0.5) * 6; p.vy = (Math.random() - 0.5) * 6;
-                p.color = "#FFD700"; p.size = 3 + Math.random() * 3;
-            }
+            if (type === 'dust') { p.vx = (Math.random() - 0.5) * 3; p.vy = -1 - Math.random() * 2; p.color = "rgba(255,255,255,0.5)"; p.size = 2 + Math.random() * 3; }
+            else if (type === 'gold') { p.vx = (Math.random() - 0.5) * 6; p.vy = (Math.random() - 0.5) * 6; p.color = "#FFD700"; p.size = 3 + Math.random() * 3; }
+            else if (type === 'snow') { p.vx = (Math.random() - 0.5) * 1; p.vy = 2 + Math.random() * 2; p.color = "#FFFFFF"; p.size = 2 + Math.random() * 2; p.life = 4.0; p.bobOffset = Math.random() * 10; }
         }
     }
 
     function generatePattern() {
         const pat = LEVEL_PATTERNS[Math.floor(Math.random() * LEVEL_PATTERNS.length)];
         pat.p.forEach(def => { spawnPlatform(nextGenX + def[0], LOGICAL_HEIGHT * 0.75 + def[1], def[2], def[3]); });
-        pat.c.forEach(def => {
-            let c = coins.find(i => !i.active);
-            if (!c) { c = {}; coins.push(c); }
-            c.active = true; c.x = nextGenX + def[0]; c.y = LOGICAL_HEIGHT * 0.75 + def[1]; c.bob = Math.random() * Math.PI;
-        });
+        pat.c.forEach(def => { let c = coins.find(i => !i.active); if (!c) { c = {}; coins.push(c); } c.active = true; c.x = nextGenX + def[0]; c.y = LOGICAL_HEIGHT * 0.75 + def[1]; c.bob = Math.random() * Math.PI; });
         nextGenX += pat.w;
     }
 
+    function spawnCloud(worldX) {
+        clouds.push({ x: worldX, y: Math.random() * 300, w: 100 + Math.random()*80, speed: 0 });
+    }
+
     function init() {
-        hiScoreEl.innerText = highScore;
-        resize();
-        for(let i=0; i<60; i++) platforms.push({ active: false, decor: [] });
-        for(let i=0; i<150; i++) coins.push({ active: false, bob: Math.random() });
-        for(let i=0; i<80; i++) particles.push({ active: false }); 
-        for(let i=0; i<8; i++) spawnCloud(Math.random() * 2000);
+        hiScoreEl.innerText = highScore; updateUI(); resize();
+        for(let i=0; i<100; i++) platforms.push({ active: false, decor: [] });
+        for(let i=0; i<200; i++) coins.push({ active: false, bob: Math.random() });
+        for(let i=0; i<150; i++) particles.push({ active: false }); 
         for(let i=0; i<5; i++) birds.push({ x: Math.random() * 2000, y: Math.random() * 400, speed: 2 + Math.random(), offset: Math.random()*10 });
         resetGameLogic();
         requestAnimationFrame(loop);
     }
 
-    function showLevelText(mainText, subText) {
-        toastInner.innerHTML = `<span style="font-size:clamp(40px, 8vw, 64px); color:#fff; line-height:1;">${mainText}</span><br>
-                                <span style="font-size:clamp(24px, 5vw, 40px); color:#fff; letter-spacing:4px; text-transform:uppercase;">${subText}</span>`;
-        toastInner.classList.remove('fade-anim');
-        void toastInner.offsetWidth; 
-        toastInner.classList.add('fade-anim');
+    function showLevelText(mainText, subText, isWarning) {
+        let colorStyle = isWarning ? "color:#FF0000;" : "color:#fff;";
+        let classToAdd = isWarning ? "warning-anim" : "fade-anim";
+        toastInner.innerHTML = `<span style="font-size:clamp(40px, 8vw, 64px); ${colorStyle} line-height:1;">${mainText}</span><br><span style="font-size:clamp(24px, 5vw, 40px); color:#fff; letter-spacing:4px; text-transform:uppercase;">${subText}</span>`;
+        toastInner.className = 'toast-content'; void toastInner.offsetWidth; toastInner.classList.add(classToAdd);
     }
 
     function lerpColor(a, b, amount) { 
-        var ah = parseInt(a.replace(/#/g, ''), 16),
-            ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
-            bh = parseInt(b.replace(/#/g, ''), 16),
-            br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
-            rr = ar + amount * (br - ar),
-            rg = ag + amount * (bg - ag),
-            rb = ab + amount * (bb - ab);
+        var ah = parseInt(a.replace(/#/g, ''), 16), ar = ah >> 16, ag = ah >> 8 & 0xff, ab = ah & 0xff,
+            bh = parseInt(b.replace(/#/g, ''), 16), br = bh >> 16, bg = bh >> 8 & 0xff, bb = bh & 0xff,
+            rr = ar + amount * (br - ar), rg = ag + amount * (bg - ag), rb = ab + amount * (bb - ab);
         return '#' + ((1 << 24) + (rr << 16) + (rg << 8) + rb | 0).toString(16).slice(1);
     }
 
+    function darkenColor(hex, percent) {
+        let r = parseInt(hex.substring(1,3),16); let g = parseInt(hex.substring(3,5),16); let b = parseInt(hex.substring(5,7),16);
+        r = Math.max(0, Math.floor(r * (100 - percent) / 100)); g = Math.max(0, Math.floor(g * (100 - percent) / 100)); b = Math.max(0, Math.floor(b * (100 - percent) / 100));
+        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    }
+
     function generateMountainShape(width, height) {
-        let pts = []; pts.push({x:0, y:0});
-        let numPeaks = Math.floor(width / 100); 
-        for(let p=1; p<numPeaks; p++) {
-            let x = (width/numPeaks)*p + (Math.random()*40-20);
-            let y = height - (Math.random() * height * 0.4); 
-            if (p > 1) {
-                let prevPt = pts[pts.length-1];
-                let midX = (prevPt.x + x) / 2;
-                let midY = (prevPt.y + y) / 2 + (Math.random()*30-15); 
-                pts.push({x:midX, y:midY});
-            }
-            pts.push({x:x, y:y});
+        let mainPts = [{x:0, y:0}];
+        let shadowPts = [];
+        let numPeaks = 2 + Math.floor(Math.random() * 3); 
+        let segmentW = width / numPeaks;
+        for(let p=1; p<=numPeaks; p++) {
+            let peakX = (segmentW * p) - (segmentW/2) + (Math.random() * segmentW * 0.3 - segmentW*0.15);
+            let peakY = height * (0.6 + Math.random() * 0.4); 
+            let valleyX = (segmentW * p);
+            let valleyY = height * (0.1 + Math.random() * 0.25); 
+            if(p === numPeaks) { valleyX = width; valleyY = 0; }
+            mainPts.push({x: peakX, y: peakY});
+            mainPts.push({x: valleyX, y: valleyY});
+            shadowPts.push({ peak: {x: peakX, y: peakY}, valley: {x: valleyX, y: valleyY}, midSlope: {x: peakX + (valleyX-peakX)*0.4, y: valleyY + (peakY-valleyY)*0.4 } });
         }
-        pts.push({x:width, y:0}); pts[0].y = 0; pts[pts.length-1].y = 0; return pts;
+        return { main: mainPts, shadows: shadowPts };
     }
 
     function addMountainChunk(layer) {
-        let rightmost = -1000;
-        let group = mountains.filter(m => m.layer === layer);
-        if(group.length > 0) {
-            group.forEach(m => rightmost = Math.max(rightmost, m.x + m.w));
-        } else {
-            rightmost = (cameraX * (layer===0 ? 0.1 : 0.3)) - 500;
-        }
-        let w = 1200 + Math.random() * 500;
-        let h = layer === 0 ? 420 : 285;
-        mountains.push({ x: rightmost - 2, y: 0, w: w, h: h, layer: layer, points: generateMountainShape(w, h) });
-    }
-
-    function spawnCloud(startX) {
-        clouds.push({ x: startX, y: Math.random() * 250, w: 80 + Math.random()*80, speed: 0.2 + Math.random()*0.3 });
+        let rightmost = -1000; let group = mountains.filter(m => m.layer === layer);
+        if(group.length > 0) { group.forEach(m => rightmost = Math.max(rightmost, m.x + m.w)); } else { rightmost = (cameraX * (layer===0 ? 0.1 : 0.3)) - 500; }
+        let w = 1200 + Math.random() * 600; let h = layer === 0 ? 450 : 300;
+        let shapeData = generateMountainShape(w, h);
+        mountains.push({ x: rightmost - 2, y: 0, w: w, h: h, layer: layer, points: shapeData.main, shadows: shapeData.shadows });
     }
 
     function resize() {
-        const dpr = Math.min(window.devicePixelRatio, 2); 
-        canvas.width = window.innerWidth * dpr;
-        canvas.height = window.innerHeight * dpr;
-        gameScale = canvas.height / LOGICAL_HEIGHT;
-        ctx.setTransform(1,0,0,1,0,0); 
-        updateSkyGradient();
+        const dpr = Math.min(window.devicePixelRatio, 2); canvas.width = window.innerWidth * dpr; canvas.height = window.innerHeight * dpr;
+        gameScale = canvas.height / LOGICAL_HEIGHT; ctx.setTransform(1,0,0,1,0,0); updateSkyGradient();
     }
     window.addEventListener('resize', resize);
 
     function updateSkyGradient() {
-        let h = LOGICAL_HEIGHT > 0 ? LOGICAL_HEIGHT : 720;
-        skyGradient = ctx.createLinearGradient(0, 0, 0, h);
-        skyGradient.addColorStop(0, currentColors.skyTop); 
-        skyGradient.addColorStop(1, currentColors.skyBottom);
+        let h = LOGICAL_HEIGHT > 0 ? LOGICAL_HEIGHT : 720; skyGradient = ctx.createLinearGradient(0, 0, 0, h);
+        skyGradient.addColorStop(0, currentColors.skyTop); skyGradient.addColorStop(1, currentColors.skyBottom);
     }
 
-    function loop(t) { 
-        if(!lastTime) lastTime=t; const dt=(t-lastTime)/(1000/60); lastTime=t; 
-        update(Math.min(dt, 2.0)); draw(); requestAnimationFrame(loop); 
-    }
+    function loop(t) { if(!lastTime) lastTime=t; const dt=(t-lastTime)/(1000/60); lastTime=t; update(Math.min(dt, 2.0)); draw(); requestAnimationFrame(loop); }
 
-    window.triggerStart = function() {
-        AudioSys.init(); AudioSys.play('click'); 
-        screens.start.classList.add('slide-out');
-        setTimeout(() => { startGame(); topBar.style.opacity = 1; }, 500);
-    }
-    window.startGame = function() { 
-        screens.start.style.display = 'none'; screens.start.classList.remove('slide-out'); 
-        updateSkyGradient();
-        AudioSys.startMusic(); gameState = "PLAYING"; 
-        player.rotation = 0; 
-        showLevelText("LEVEL 1", "GRASSLAND"); 
-    };
-    
-    window.goToMenu = function() {
-        AudioSys.play('click');
-        screens.start.classList.remove('slide-out');
-        showScreen('start');
-        gameState = "START";
-        prevGameState = "START";
-        resetGameLogic();
-    };
-
-    window.resetGame = function() { 
-        AudioSys.play('click'); AudioSys.startMusic(); 
-        showScreen(null); resetGameLogic(); gameState = "PLAYING"; topBar.style.opacity = 1; showLevelText("LEVEL 1", "GRASSLAND"); 
-        updateSkyGradient();
-    };
+    window.triggerStart = function() { AudioSys.init(); AudioSys.play('click'); screens.start.classList.add('slide-out'); setTimeout(() => { startGame(); topBar.style.opacity = 1; menuCoinsDisplay.style.display = 'none'; }, 500); }
+    window.startGame = function() { screens.start.style.display = 'none'; screens.start.classList.remove('slide-out'); updateSkyGradient(); AudioSys.startMusic(); gameState = "PLAYING"; player.rotation = 0; showLevelText("PLACE", "GRASSLAND", false); };
+    window.goToMenu = function() { AudioSys.play('click'); screens.start.classList.remove('slide-out'); showScreen('start'); gameState = "START"; prevGameState = "START"; resetGameLogic(); };
+    window.resetGame = function() { AudioSys.play('click'); AudioSys.startMusic(); showScreen(null); resetGameLogic(); gameState = "PLAYING"; topBar.style.opacity = 1; showLevelText("PLACE", "GRASSLAND", false); updateSkyGradient(); };
     window.togglePause = function() { AudioSys.play('click'); if (gameState === "PLAYING") { gameState = "PAUSED"; showScreen('pause'); AudioSys.stopMusic(); } else if (gameState === "PAUSED") { gameState = "PLAYING"; showScreen(null); AudioSys.startMusic(); } };
     window.toggleMenu = function() { AudioSys.play('click'); if (gameState !== "MENU") { prevGameState = gameState; gameState = "MENU"; showScreen('menu'); } };
     window.closeMenu = function() { AudioSys.play('click'); showScreen(prevGameState === "START" ? 'start' : (prevGameState === "PAUSED" ? 'pause' : null)); gameState = prevGameState; };
     window.toggleSound = function() { AudioSys.enabled = !AudioSys.enabled; soundToggleBtn.innerHTML = AudioSys.enabled ? SVG_SOUND_ON : SVG_SOUND_OFF; AudioSys.play('click'); if(AudioSys.enabled && gameState === "PLAYING") AudioSys.startMusic(); if(!AudioSys.enabled) AudioSys.stopMusic(); };
-
+    
     function showScreen(name) { 
-        Object.values(screens).forEach(s => { if (s !== screens.start) s.style.display = 'none'; }); 
-        if (name === 'start') { screens.start.style.display = 'flex'; topBar.style.opacity = 0; } else if(name && screens[name]) { screens[name].style.display = 'block'; }
+        Object.values(screens).forEach(s => { s.style.display = 'none'; }); 
+        if (name === 'start') { 
+            screens.start.style.display = 'flex'; 
+            topBar.style.opacity = 0; 
+            menuCoinsDisplay.style.display = 'flex'; 
+        } else if(name && screens[name]) { 
+            screens[name].style.display = 'block'; 
+        } 
     }
 
     function resetGameLogic() {
         score = 0; scoreEl.innerText = "0"; animTime = 0; bgScrollX = 0;
-        targetTheme = 'green'; transitionProgress = 0.0; confettiTriggered = false; level2Announced = false;
+        targetTheme = 'green'; lastTheme = 'green'; transitionProgress = 0.0; 
+        confettiTriggered = false; warningTriggered = false;
         currentColors = { ...PALETTES.green }; updateSkyGradient();
         player.x = 200; player.y = -200; player.dx = 0; player.dy = 5; player.rotation = 0; cameraX = 0; cameraY = -200; player.speed = 5.5;
         platforms.forEach(p => p.active = false); coins.forEach(c => c.active = false); particles.forEach(p => p.active = false);
+        obstacles.length = 0; lastObstacleX = -1000;
         spawnPlatform(-500, LOGICAL_HEIGHT * 0.75, 2000, 'ground'); nextGenX = 1500;
-        mountains.length = 0;
-        addMountainChunk(0); addMountainChunk(0); addMountainChunk(0);
-        addMountainChunk(1); addMountainChunk(1); addMountainChunk(1);
+        mountains.length = 0; addMountainChunk(0); addMountainChunk(0); addMountainChunk(0); addMountainChunk(1); addMountainChunk(1); addMountainChunk(1);
+        volcanoes.length = 0; volcanoesSpawned = 0;
+        clouds.length = 0; nextCloudX = -500;
+        ignoreInput = false;
     }
 
     function shiftWorld(offset) {
-        player.x -= offset; cameraX -= offset; nextGenX -= offset;
-        platforms.forEach(p => { if(p.active) p.x -= offset; });
-        coins.forEach(c => { if(c.active) c.x -= offset; });
-        particles.forEach(p => { if(p.active) p.x -= offset; });
-        mountains.forEach(m => { m.x -= (offset * (m.layer === 0 ? 0.1 : 0.3)); }); 
+        player.x -= offset; cameraX -= offset; nextGenX -= offset; nextCloudX -= (offset * 0.2); 
+        platforms.forEach(p => { if(p.active) p.x -= offset; }); coins.forEach(c => { if(c.active) c.x -= offset; }); 
+        particles.forEach(p => { if(p.active) p.x -= offset; }); mountains.forEach(m => { m.x -= (offset * (m.layer === 0 ? 0.1 : 0.3)); });
+        volcanoes.forEach(v => { v.x -= (offset * 0.1); }); obstacles.forEach(o => { if(o.active) o.x -= offset; }); clouds.forEach(c => { c.x -= (offset * 0.2); }); 
+        lastObstacleX -= offset;
     }
 
     function spawnConfetti() {
-        for(let i=0; i<50; i++) {
+        for(let i=0; i<80; i++) {
             let p = particles.find(i => !i.active); if(!p) { p = {}; particles.push(p); }
-            p.active = true; p.x = player.x + (Math.random()-0.5)*1000 + 400; p.y = -100; p.life = 3.0; p.type = 'confetti';
-            p.vx = (Math.random()-0.5)*5; p.vy = Math.random()*5 + 2; p.color = `hsl(${Math.random()*360}, 100%, 50%)`; p.size = 5 + Math.random()*5;
+            p.active = true; p.type = 'confetti'; 
+            p.x = cameraX + Math.random() * (canvas.width / gameScale);
+            p.y = LOGICAL_HEIGHT * 0.75 + 50; 
+            p.vx = (Math.random() - 0.5) * 15; p.vy = -15 - Math.random() * 10; 
+            p.life = 2.5; p.color = `hsl(${Math.random()*360}, 100%, 50%)`; p.size = 6 + Math.random()*6;
         }
-        AudioSys.play('coin'); 
+        AudioSys.play('confetti');
     }
 
     function update(dt) {
-        if(gameState === "PAUSED" || gameState === "MENU") return;
-        
+        if(gameState === "PAUSED" || gameState === "MENU" || gameState === "SHOP") return;
         if(gameState === "START") {
-            animTime += dt;
-            
-            // REMOVED WALKING TURTLE LOGIC FROM HERE
-            
-            particles.forEach(p => { 
-                if(!p.active) return; 
-                p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.05 * dt; p.vy += 0.2 * dt;
-                if(p.life <= 0) p.active = false; 
-            });
-            return;
+            animTime += dt; particles.forEach(p => { if(!p.active) return; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.05 * dt; p.vy += 0.2 * dt; if(p.life <= 0) p.active = false; }); return;
         }
-        
         if(gameState === "GAMEOVER") return;
         
-        animTime += dt; 
-        if (player.speed < 12) player.speed += 0.0008 * dt; 
-        player.dx = player.speed; 
-        bgScrollX += player.speed * dt; 
+        animTime += dt; player.speed = Math.min(12, player.speed + 0.0008 * dt); player.dx = player.speed; bgScrollX += player.speed * dt; 
 
-        if (score >= 100 && targetTheme === 'green') targetTheme = 'desert';
-        if (targetTheme === 'desert' && transitionProgress < 1.0) {
+        // --- LEVEL TRANSITION LOGIC ---
+        let coinsInStage = score % 40;
+        if (score > 0 && coinsInStage >= 35 && !warningTriggered) { 
+            warningTriggered = true; 
+            showLevelText("⚠ WARNING ⚠", "HAZARD ZONE AHEAD", true); 
+        }
+        if (coinsInStage < 30) { warningTriggered = false; }
+
+        let stage = Math.floor(score / 40);
+        let nextTheme = 'green';
+        let levelName = "GRASSLAND";
+        let levelTitle = "PLACE";
+
+        const THEMES = ['green', 'desert', 'iceage', 'volcanic'];
+        let calculatedThemeId = '';
+
+        if (stage < 4) {
+            calculatedThemeId = THEMES[stage];
+        } else {
+            let rndIndex = (stage * 7) % 4;
+            calculatedThemeId = THEMES[rndIndex];
+        }
+
+        if (calculatedThemeId === 'green') { nextTheme = 'green'; levelName = "GRASSLAND"; }
+        else if (calculatedThemeId === 'desert') { nextTheme = 'desert'; levelName = "DESERT"; }
+        else if (calculatedThemeId === 'iceage') { nextTheme = 'iceage'; levelName = "ICE AGE"; }
+        else if (calculatedThemeId === 'volcanic') { nextTheme = 'volcanic'; levelName = "VOLCANO ZONE"; }
+
+        if (targetTheme !== nextTheme) { 
+            lastTheme = targetTheme; targetTheme = nextTheme; transitionProgress = 0.0; confettiTriggered = false; 
+            showLevelText(levelTitle, levelName, false); spawnConfetti(); 
+        }
+
+        if (transitionProgress < 1.0) {
             transitionProgress += 0.005 * dt; if (transitionProgress > 1.0) transitionProgress = 1.0;
-            if (!confettiTriggered && transitionProgress > 0.1) { spawnConfetti(); confettiTriggered = true; if(!level2Announced) { showLevelText("LEVEL 2", "DESERT"); level2Announced = true; } }
-            let keys = Object.keys(currentColors); keys.forEach(k => { currentColors[k] = lerpColor(PALETTES.green[k], PALETTES.desert[k], transitionProgress); });
+            let keys = Object.keys(currentColors); keys.forEach(k => { currentColors[k] = lerpColor(PALETTES[lastTheme][k], PALETTES[targetTheme][k], transitionProgress); });
             updateSkyGradient();
         }
 
-        if (cameraX > 5000) shiftWorld(5000);
+        if (targetTheme === 'iceage' && Math.random() > 0.96) { spawnParticles(cameraX + (Math.random() - 0.2) * (canvas.width / gameScale * 1.5), cameraY - 20, 'snow'); }
         
+        if (targetTheme === 'volcanic' && volcanoesSpawned < 2) {
+            let logicalWidth = canvas.width / gameScale;
+            let lastVolcanoX = volcanoes.length > 0 ? volcanoes[volcanoes.length-1].x : -9999;
+            if (cameraX > lastVolcanoX && Math.random() > 0.995) {
+                 if (volcanoes.length === 0 || (cameraX * 0.1 + logicalWidth * 1.5) > lastVolcanoX + logicalWidth * 2.5) {
+                     volcanoes.push({ x: cameraX * 0.1 + logicalWidth * 1.5 }); volcanoesSpawned++;
+                 }
+            }
+        }
+
+        if (cameraX > 5000) shiftWorld(5000);
         let logicalWidth = canvas.width / gameScale;
         if (nextGenX < cameraX + logicalWidth + 1000) generatePattern();
         
         for(let l=0; l<2; l++) {
-            let pFactor = l === 0 ? 0.1 : 0.3;
-            let rightmost = -10000; mountains.forEach(m => { if(m.layer === l) rightmost = Math.max(rightmost, m.x + m.w); });
+            let pFactor = l === 0 ? 0.1 : 0.3; let rightmost = -10000; mountains.forEach(m => { if(m.layer === l) rightmost = Math.max(rightmost, m.x + m.w); });
             if (rightmost < (cameraX * pFactor) + logicalWidth + 200) addMountainChunk(l);
-            let screenLeftParallax = (cameraX * pFactor) - 1500;
-            for(let i = mountains.length - 1; i >= 0; i--) { if(mountains[i].layer === l && mountains[i].x + mountains[i].w < screenLeftParallax) mountains.splice(i, 1); }
+            let screenLeftParallax = (cameraX * pFactor) - 1500; for(let i = mountains.length - 1; i >= 0; i--) { if(mountains[i].layer === l && mountains[i].x + mountains[i].w < screenLeftParallax) mountains.splice(i, 1); }
         }
 
-        let rightmostCloud = -1000; clouds.forEach(c => rightmostCloud = Math.max(rightmostCloud, c.x));
-        if (rightmostCloud < (cameraX * 0.05) + logicalWidth) spawnCloud(rightmostCloud + 200 + Math.random() * 300);
-        clouds.forEach((c, i) => { c.x += c.speed * dt; if(c.x - (cameraX * 0.05) + c.w < -200) clouds.splice(i, 1); });
+        let cloudParallax = 0.2;
+        let visibleRightWorldX = logicalWidth + (cameraX * cloudParallax);
+        if (nextCloudX < visibleRightWorldX + 200) {
+            spawnCloud(nextCloudX); nextCloudX += 600 + Math.random() * 400; 
+        }
+        let visibleLeftWorldX = 0 + (cameraX * cloudParallax) - 300;
+        for(let i=clouds.length-1; i>=0; i--) { if (clouds[i].x < visibleLeftWorldX) clouds.splice(i, 1); }
 
         const deleteX = cameraX - 1000;
         platforms.forEach(p => { if(p.active && p.x + p.w < deleteX) p.active = false; });
         coins.forEach(c => { if(c.active && c.x < deleteX) c.active = false; });
+        for(let i=obstacles.length-1; i>=0; i--) { if (obstacles[i].x < deleteX) obstacles.splice(i, 1); }
 
-        player.dy += player.gravity * dt; player.x += player.dx * dt; player.y += player.dy * dt;
-        player.state = "walk";
-
-        if (player.rotation > 0) {
-            player.rotation += 20 * dt; 
-            if (player.rotation > 360) player.rotation = 0; 
-        }
+        player.dy += player.gravity * dt; player.x += player.dx * dt; player.y += player.dy * dt; player.state = "walk";
+        if (player.rotation > 0) { player.rotation += 20 * dt; if (player.rotation > 360) player.rotation = 0; }
 
         player.grounded = false;
         for(let i=0; i<platforms.length; i++) {
@@ -725,25 +890,52 @@
         }
         if(!player.grounded) player.state = "jump";
         
-        if(player.y > LOGICAL_HEIGHT * 0.75 + 150) { 
-            AudioSys.play('die'); AudioSys.stopMusic(); gameState = "GAMEOVER"; 
-            if(score > highScore) { highScore = score; localStorage.setItem('st_highscore', highScore); hiScoreEl.innerText = highScore; }
-            finalScoreEl.innerText = score; showScreen('gameover'); 
-        }
-
-        let targetCamX = player.x - (logicalWidth * 0.3); cameraX += (targetCamX - cameraX) * (0.1 * dt);
-        let targetCamY = 0; if (player.y < -100) targetCamY = player.y + 100; cameraY += (targetCamY - cameraY) * (0.05 * dt);
-
-        coins.forEach(c => {
-            if(!c.active) return;
-            if(Math.sqrt((player.x+20 - c.x)**2 + (player.y+20 - c.y)**2) < 40) { c.active = false; score++; scoreEl.innerText = score; AudioSys.play('coin'); spawnParticles(c.x, c.y, "gold"); }
+        obstacles.forEach(o => {
+            if(!o.active) return;
+            let pLeft = player.x + 15; let pRight = player.x + player.w - 15; let pTop = player.y + 10; let pBottom = player.y + player.h - 5;
+            let oLeft = o.x + 5; let oRight = o.x + o.w - 5; let oTop = o.y - o.h + 5; let oBottom = o.y;
+            if (pRight > oLeft && pLeft < oRight && pBottom > oTop && pTop < oBottom) {
+                if (!ignoreInput) {
+                    AudioSys.play('die'); AudioSys.stopMusic(); gameState = "GAMEOVER"; ignoreInput = true; 
+                    setTimeout(() => { ignoreInput = false; }, 1000);
+                    totalCoins += score; 
+                    if(score > highScore) { highScore = score; localStorage.setItem('st_highscore', highScore); hiScoreEl.innerText = highScore; } saveData();
+                    goMsgEl.innerText = GO_MESSAGES[Math.floor(Math.random() * GO_MESSAGES.length)];
+                    finalScoreEl.innerText = score; showScreen('gameover');
+                }
+            }
         });
 
+        if(player.y > LOGICAL_HEIGHT * 0.75 + 150) { 
+            if (!ignoreInput && gameState !== "GAMEOVER") {
+                AudioSys.play('die'); AudioSys.stopMusic(); gameState = "GAMEOVER"; ignoreInput = true; 
+                setTimeout(() => { ignoreInput = false; }, 1000);
+                totalCoins += score;
+                if(score > highScore) { highScore = score; localStorage.setItem('st_highscore', highScore); hiScoreEl.innerText = highScore; } saveData();
+                goMsgEl.innerText = GO_MESSAGES[Math.floor(Math.random() * GO_MESSAGES.length)];
+                finalScoreEl.innerText = score; showScreen('gameover'); 
+            }
+        }
+
+        // --- NEW CAMERA LOGIC FOR MOBILE OPTIMIZATION ---
+        // On phones (width < 600), offset the player to 15% of screen width (left side).
+        // On larger screens, keep player at 30%.
+        let isPhone = window.innerWidth < 600;
+        let camOffsetRatio = isPhone ? 0.15 : 0.3;
+        
+        let targetCamX = player.x - (logicalWidth * camOffsetRatio); 
+        cameraX += (targetCamX - cameraX) * (0.1 * dt);
+        
+        let targetCamY = 0; if (player.y < -100) targetCamY = player.y + 100; cameraY += (targetCamY - cameraY) * (0.05 * dt);
+
+        coins.forEach(c => { if(!c.active) return; if(Math.sqrt((player.x+20 - c.x)**2 + (player.y+20 - c.y)**2) < 40) { c.active = false; score++; scoreEl.innerText = score; AudioSys.play('coin'); spawnParticles(c.x, c.y, "gold"); } });
         birds.forEach(b => { b.x += b.speed * dt; if (b.x > cameraX + logicalWidth + 100) b.x = cameraX - 200; });
         particles.forEach(p => { 
-            if(!p.active) return; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.05 * dt; 
-            if(p.type === 'confetti') { p.vy *= 0.95; p.x += Math.sin(animTime * 0.5 + p.life) * 2; } else { p.vy += 0.2 * dt; }
-            if(p.life <= 0) p.active = false; 
+            if(!p.active) return; 
+            if (p.type === 'snow') { p.x += p.vx * dt; p.x += Math.sin(animTime * 0.05 + p.bobOffset) * 0.5 * dt; p.y += p.vy * dt; } 
+            else if (p.type === 'confetti') { p.vy += 0.5 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.02 * dt; } 
+            else { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.05 * dt; if(p.type !== 'confetti') p.vy += 0.2 * dt; } 
+            if(p.life <= 0 || p.y > LOGICAL_HEIGHT + cameraY) p.active = false; 
         });
     }
 
@@ -751,128 +943,144 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save(); ctx.scale(gameScale, gameScale);
         let logicalW = canvas.width / gameScale; let logicalH = LOGICAL_HEIGHT;
-
-        ctx.fillStyle = currentColors.skyTop; 
-        ctx.fillRect(0, 0, logicalW, logicalH);
-        
-        if(skyGradient) {
-            ctx.fillStyle = skyGradient; 
-            ctx.fillRect(0, 0, logicalW, logicalH);
-        }
+        ctx.fillStyle = currentColors.skyTop; ctx.fillRect(0, 0, logicalW, logicalH);
+        if(skyGradient) { ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, logicalW, logicalH); }
         
         for(let layer=0; layer<2; layer++) {
-            ctx.fillStyle = layer===0 ? currentColors.mountBack : currentColors.mountFront;
-            let pFactor = layer===0 ? 0.1 : 0.3;
-            mountains.forEach(m => {
-                if(m.layer !== layer) return;
-                let drawX = m.x - (cameraX * pFactor);
-                if (drawX > logicalW || drawX + m.w < 0) return;
-                ctx.beginPath(); ctx.moveTo(drawX + m.points[0].x, logicalH - cameraY * (pFactor * 0.5) + 200); 
-                for(let k=1; k<m.points.length-1; k++) ctx.lineTo(drawX + m.points[k].x, (logicalH - cameraY * (pFactor * 0.5)) - m.points[k].y);
-                ctx.lineTo(drawX + m.points[m.points.length-1].x, logicalH - cameraY * (pFactor * 0.5) + 200); ctx.fill();
+            let baseColor = layer===0 ? currentColors.mountBack : currentColors.mountFront;
+            let shadowColor = darkenColor(baseColor, 20); 
+            ctx.fillStyle = baseColor; let pFactor = layer===0 ? 0.1 : 0.3;
+            mountains.forEach(m => { if(m.layer !== layer) return; let drawX = m.x - (cameraX * pFactor); if (drawX > logicalW || drawX + m.w < 0) return;
+                let baseY = logicalH - cameraY * (pFactor * 0.5);
+                ctx.beginPath(); ctx.moveTo(drawX + m.points[0].x, baseY + 200); 
+                for(let k=1; k<m.points.length; k++) ctx.lineTo(drawX + m.points[k].x, baseY - m.points[k].y);
+                ctx.lineTo(drawX + m.w, baseY + 200); ctx.fill(); 
+                ctx.fillStyle = shadowColor;
+                m.shadows.forEach(s => { ctx.beginPath(); ctx.moveTo(drawX + s.peak.x, baseY - s.peak.y); ctx.lineTo(drawX + s.valley.x, baseY - s.valley.y); ctx.lineTo(drawX + s.midSlope.x, baseY - s.midSlope.y); ctx.fill(); });
+                ctx.fillStyle = baseColor; 
             });
+            if(layer === 0) {
+                 volcanoes.forEach(v => {
+                       let vParallax = 0.1; let drawVolcanoX = v.x - (cameraX * vParallax); if (drawVolcanoX > logicalW + 400 || drawVolcanoX < -600) return;
+                       let volcanoBaseY = logicalH - cameraY * 0.05 + 100;
+                       ctx.fillStyle = "#263238"; ctx.beginPath(); ctx.moveTo(drawVolcanoX - 300, volcanoBaseY); ctx.lineTo(drawVolcanoX - 80, volcanoBaseY - 450); ctx.lineTo(drawVolcanoX + 80, volcanoBaseY - 450); ctx.lineTo(drawVolcanoX + 300, volcanoBaseY); ctx.fill();
+                       ctx.fillStyle = "#BF360C"; ctx.beginPath(); ctx.moveTo(drawVolcanoX - 50, volcanoBaseY - 450); ctx.lineTo(drawVolcanoX + 50, volcanoBaseY - 450); ctx.quadraticCurveTo(drawVolcanoX + 100, volcanoBaseY - 200, drawVolcanoX + 20, volcanoBaseY); ctx.lineTo(drawVolcanoX - 20, volcanoBaseY); ctx.quadraticCurveTo(drawVolcanoX - 100, volcanoBaseY - 200, drawVolcanoX - 50, volcanoBaseY - 450); ctx.fill();
+                       ctx.fillStyle = "#FFAB00"; for(let i=0; i<5; i++) { let yOffset = ((animTime * 0.15) + (i * 90)) % 450; let blobY = (volcanoBaseY - 450) + yOffset; let spread = (yOffset / 450); let blobX = drawVolcanoX + Math.sin(yOffset * 0.05) * 10 * spread; let widthAtHeight = 15 + spread * 20; ctx.beginPath(); ctx.ellipse(blobX, blobY, widthAtHeight, 10, 0, 0, Math.PI*2); ctx.fill(); }
+                       ctx.fillStyle = "rgba(255, 60, 0, 0.4)"; ctx.beginPath(); ctx.arc(drawVolcanoX, volcanoBaseY - 450, 70 + Math.sin(animTime*0.1)*15, 0, Math.PI*2); ctx.fill();
+                 });
+            }
         }
 
-        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
         clouds.forEach(c => { 
-            let drawX = c.x - (cameraX * 0.05); let drawY = c.y - cameraY * 0.1;
-            ctx.beginPath(); ctx.arc(drawX, drawY, c.w/2, 0, Math.PI*2); ctx.arc(drawX + c.w*0.5, drawY + 10, c.w/2.5, 0, Math.PI*2); ctx.arc(drawX - c.w*0.5, drawY + 10, c.w/2.5, 0, Math.PI*2); ctx.fill();
+            let drawX = c.x - (cameraX * 0.2); let drawY = c.y - cameraY * 0.1; let shadowOffset = 8;
+            ctx.globalAlpha = 0.4; ctx.fillStyle = currentColors.cloudShadow; ctx.beginPath(); 
+            ctx.arc(drawX + shadowOffset, drawY + shadowOffset, c.w/2, 0, Math.PI*2); ctx.arc(drawX + c.w*0.5 + shadowOffset, drawY + 10 + shadowOffset, c.w/2.5, 0, Math.PI*2); ctx.arc(drawX - c.w*0.5 + shadowOffset, drawY + 10 + shadowOffset, c.w/2.5, 0, Math.PI*2); ctx.fill();
+            ctx.globalAlpha = 0.85; ctx.fillStyle = currentColors.cloudBody; ctx.beginPath(); 
+            ctx.arc(drawX, drawY, c.w/2, 0, Math.PI*2); ctx.arc(drawX + c.w*0.5, drawY + 10, c.w/2.5, 0, Math.PI*2); ctx.arc(drawX - c.w*0.5, drawY + 10, c.w/2.5, 0, Math.PI*2); ctx.fill();
+            ctx.globalAlpha = 1.0; 
         });
+        
+        if(gameState !== "START" && !(gameState === "MENU" && prevGameState === "START")) ctx.translate(-cameraX | 0, -cameraY | 0);
 
-        if(gameState !== "START") ctx.translate(-cameraX | 0, -cameraY | 0);
+        for(let i=0; i<particles.length; i++) { 
+            let p = particles[i]; 
+            if(p.active && p.type === 'confetti') {
+                ctx.globalAlpha = p.life > 1 ? 1 : p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.rect(p.x|0, p.y|0, p.size, p.size); ctx.fill(); ctx.globalAlpha = 1.0; 
+            } 
+        }
 
         ctx.strokeStyle = currentColors.ground; ctx.lineWidth = 2; ctx.beginPath();
-        for(let i=0; i<birds.length; i++) { let b=birds[i]; let flyY = Math.sin(animTime*0.2 + b.offset) * 5; let bx = b.x|0; let by = (b.y + flyY)|0; ctx.moveTo(bx, by); ctx.lineTo(bx - 10, by - 5); ctx.moveTo(bx, by); ctx.lineTo(bx + 10, by - 5); }
-        ctx.stroke();
+        for(let i=0; i<birds.length; i++) { let b=birds[i]; let flyY = Math.sin(animTime*0.2 + b.offset) * 5; let bx = b.x|0; let by = (b.y + flyY)|0; ctx.moveTo(bx, by); ctx.lineTo(bx - 10, by - 5); ctx.moveTo(bx, by); ctx.lineTo(bx + 10, by - 5); } ctx.stroke();
         
         for(let i=0; i<platforms.length; i++) { 
             let p=platforms[i]; if(p.active) {
                 ctx.fillStyle = currentColors.ground; ctx.fillRect(p.x|0, p.y|0, p.w|0, ((p.type==='float'?40:logicalH-p.y+200))|0);
                 if(p.decor) p.decor.forEach(d => { if(d.color === 'rock') { ctx.fillStyle = "#555"; ctx.beginPath(); ctx.arc(p.x + d.x, p.y, d.size, Math.PI, 0); ctx.fill(); } });
-                ctx.fillStyle = currentColors.grass; ctx.fillRect(p.x|0, p.y|0, p.w|0, 20);
-                ctx.fillStyle = currentColors.grassRim; ctx.fillRect(p.x|0, p.y|0, p.w|0, 5);
-                if(p.decor) p.decor.forEach(d => {
-                    let dx = p.x + d.x; let dy = p.y;
-                    if(d.color !== 'rock') {
-                        if(d.color.startsWith('cactus')) {
-                            ctx.fillStyle = d.color === 'cactus1' ? "#558B2F" : "#827717"; 
-                            ctx.beginPath(); ctx.arc(dx, dy-12, 7, 0, Math.PI*2); ctx.fill();
-                            ctx.beginPath(); ctx.arc(dx-6, dy-16, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx+6, dy-16, 5, 0, Math.PI*2); ctx.fill();
-                        } else {
-                            ctx.fillStyle = "#2E7D32"; ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx, dy-10); ctx.stroke(); 
-                            ctx.fillStyle = d.color; ctx.beginPath(); ctx.arc(dx, dy-12, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx-4, dy-10, 4, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx+4, dy-10, 4, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx, dy-16, 4, 0, Math.PI*2); ctx.fill(); 
-                        }
-                    }
-                });
+                ctx.fillStyle = currentColors.grass; ctx.fillRect(p.x|0, p.y|0, p.w|0, 20); ctx.fillStyle = currentColors.grassRim; ctx.fillRect(p.x|0, p.y|0, p.w|0, 5);
+                if(p.decor) p.decor.forEach(d => { let dx = p.x + d.x; let dy = p.y; if(d.color !== 'rock') { if(d.color.startsWith('cactus')) { ctx.fillStyle = d.color === 'cactus1' ? "#558B2F" : "#827717"; ctx.beginPath(); ctx.arc(dx, dy-12, 7, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx-6, dy-16, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx+6, dy-16, 5, 0, Math.PI*2); ctx.fill(); } else { ctx.fillStyle = (targetTheme === 'volcanic') ? "#3E2723" : "#2E7D32"; ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx, dy-10); ctx.stroke(); ctx.fillStyle = d.color; ctx.beginPath(); ctx.arc(dx, dy-12, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx-4, dy-10, 4, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx+4, dy-10, 4, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(dx, dy-16, 4, 0, Math.PI*2); ctx.fill(); } } });
             }
         }
         
+        obstacles.forEach(o => {
+            if(!o.active) return;
+            if(o.type === 'cactus') { 
+                ctx.fillStyle = "#1B5E20"; ctx.beginPath(); ctx.moveTo(o.x + 6, o.y); ctx.lineTo(o.x + 6, o.y - 45); ctx.arc(o.x + 15, o.y - 45, 9, Math.PI, 0); ctx.lineTo(o.x + 24, o.y); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(o.x + 6, o.y - 25); ctx.quadraticCurveTo(o.x - 8, o.y - 25, o.x - 8, o.y - 35); ctx.arc(o.x - 8, o.y - 35, 6, 0, Math.PI, true); ctx.lineTo(o.x + 6, o.y - 20); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(o.x + 24, o.y - 30); ctx.quadraticCurveTo(o.x + 38, o.y - 30, o.x + 38, o.y - 40); ctx.arc(o.x + 38, o.y - 40, 6, 0, Math.PI, true); ctx.lineTo(o.x + 24, o.y - 25); ctx.fill();
+                ctx.fillStyle = "#D32F2F"; ctx.beginPath(); ctx.arc(o.x - 8, o.y - 38, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(o.x + 38, o.y - 43, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(o.x + 15, o.y - 56, 6, 0, Math.PI*2); ctx.fill(); 
+            } else if (o.type === 'ice') { 
+                ctx.fillStyle = "#01579B"; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(o.x + 5, o.y - 45); ctx.lineTo(o.x + 10, o.y); ctx.lineTo(o.x + 15, o.y - 35); ctx.lineTo(o.x + 20, o.y); ctx.lineTo(o.x + 25, o.y - 50); ctx.lineTo(o.x + 30, o.y); ctx.fill(); ctx.strokeStyle = "#4FC3F7"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(o.x+5, o.y-45); ctx.lineTo(o.x+5, o.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(o.x+25, o.y-50); ctx.lineTo(o.x+25, o.y); ctx.stroke(); 
+            } else if (o.type === 'lava') { 
+                ctx.fillStyle = "#212121"; ctx.beginPath(); ctx.moveTo(o.x - 5, o.y); ctx.lineTo(o.x + 15, o.y - 60); ctx.lineTo(o.x + 35, o.y); ctx.fill();
+                ctx.fillStyle = "#FF3D00"; ctx.beginPath(); ctx.moveTo(o.x + 2, o.y); ctx.lineTo(o.x + 15, o.y - 50); ctx.lineTo(o.x + 28, o.y); ctx.fill();
+                ctx.fillStyle = "#FFD700"; ctx.beginPath(); ctx.moveTo(o.x + 10, o.y); ctx.lineTo(o.x + 15, o.y - 35); ctx.lineTo(o.x + 20, o.y); ctx.fill();
+            }
+        });
+
         ctx.fillStyle = "#FFD700"; ctx.strokeStyle = "#DAA520"; ctx.lineWidth = 2;
-        for(let i=0; i<coins.length; i++) { 
-            let c=coins[i]; if(c.active) { 
-                let bob = Math.sin(animTime*0.1 + c.bob) * 5; let cx = c.x; let cy = c.y + bob;
-                ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(cx - 4, cy - 4, 3, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = "#FFD700"; 
-            } 
-        }
+        for(let i=0; i<coins.length; i++) { let c=coins[i]; if(c.active) { let bob = Math.sin(animTime*0.1 + c.bob) * 5; let cx = c.x; let cy = c.y + bob; ctx.beginPath(); ctx.arc(cx, cy, 12, 0, Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(cx - 4, cy - 4, 3, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = "#FFD700"; } }
         
-        // ONLY DRAW TURTLE IN GAME, NOT ON START SCREEN
-        if (gameState !== "START") {
-            drawTurtleOriginal(player.x|0, player.y|0);
+        // ONLY DRAW MAIN TURTLE IF PLAYING OR PAUSED (NOT IN START/MENU/SHOP)
+        // (Previously, drawMenuTurtle was called here if gameState === "START")
+        if (gameState === "PLAYING" || gameState === "PAUSED" || gameState === "GAMEOVER") {
+             drawTurtleOriginal(player.x|0, player.y|0);
         }
         
         for(let i=0; i<particles.length; i++) { 
-            let p = particles[i]; if(p.active) { 
-                ctx.globalAlpha = p.life > 1 ? 1 : p.life; ctx.fillStyle = p.color; ctx.beginPath(); 
-                if(p.type === 'confetti') ctx.rect(p.x|0, p.y|0, p.size, p.size); else ctx.arc(p.x|0, p.y|0, p.size, 0, Math.PI*2); 
-                ctx.fill(); ctx.globalAlpha = 1.0; 
-            } 
+            let p = particles[i]; if(p.active && p.type !== 'confetti') { ctx.globalAlpha = p.life > 1 ? 1 : p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x|0, p.y|0, p.size, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha = 1.0; } 
         }
         ctx.restore();
     }
 
     function drawTurtleOriginal(x, y) {
-        ctx.save(); ctx.translate(x + 20, y + 20); 
-        if (!player.facingRight) ctx.scale(-1, 1);
+        ctx.save(); 
+        ctx.setLineDash([]); 
+        ctx.strokeStyle = "rgba(0,0,0,0)";
+        ctx.lineWidth = 0;
         
+        ctx.translate(x + 20, y + 20); 
+        if (!player.facingRight) ctx.scale(-1, 1);
         if (player.rotation > 0) ctx.rotate(player.rotation * Math.PI / 180);
-
         ctx.translate(-(x + 20), -(y + 20));
+        const skin = SKINS.find(s => s.id === currentSkinId) || SKINS[0];
         let legOffset = (player.state === "walk") ? Math.sin(animTime * 0.3) * 5 : (player.state === "jump" ? -5 : 0);
-        ctx.fillStyle = "#228B22"; ctx.beginPath(); ctx.arc(x + 10 + legOffset, y + 38, 7, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 30 - legOffset, y + 38, 7, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#32CD32"; ctx.beginPath(); ctx.ellipse(x + 20, y + 22, 22, 18, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#98FB98"; ctx.beginPath(); ctx.ellipse(x + 20, y + 25, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "#32CD32"; ctx.beginPath(); ctx.arc(x + 36, y + 15, 13, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x + 38, y + 12, 5, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = "black"; ctx.beginPath(); ctx.arc(x + 40, y + 12, 2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = skin.shell; ctx.beginPath(); ctx.arc(x + 10 + legOffset, y + 38, 7, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.arc(x + 30 - legOffset, y + 38, 7, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = skin.body; ctx.beginPath(); ctx.ellipse(x + 20, y + 22, 22, 18, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = skin.belly; ctx.beginPath(); ctx.ellipse(x + 20, y + 25, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = skin.body; ctx.beginPath(); ctx.arc(x + 36, y + 15, 13, 0, Math.PI * 2); ctx.fill();
+        
+        ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(x + 40, y + 12, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "black"; ctx.beginPath(); ctx.arc(x + 42, y + 12, 2.5, 0, Math.PI * 2); ctx.fill();
+        
+        // BLUSH REMOVED FROM HERE
+
         ctx.restore();
     }
 
     const doJump = (e) => { 
         if (e.type === 'touchstart') e.preventDefault(); 
-        if(gameState==="START") triggerStart(); 
-        else if(gameState==="GAMEOVER") resetGame(); 
-        else if(player.grounded||player.jumpCount<player.maxJumps) { 
-            AudioSys.play('jump'); 
-            player.dy = player.jumpPower; 
-            player.grounded=false; 
-            player.jumpCount++; 
-            spawnParticles(player.x+20, player.y+40, "dust"); 
-            if(player.jumpCount>1) player.rotation=1; 
+        if (gameState==="START") { triggerStart(); } 
+        else if (gameState==="GAMEOVER") { if (!ignoreInput) resetGame(); } 
+        else if (player.grounded || player.jumpCount < player.maxJumps) { 
+            AudioSys.play('jump'); player.dy = player.jumpPower; player.grounded=false; player.jumpCount++; spawnParticles(player.x+20, player.y+40, "dust"); 
+            if (player.jumpCount > 1) player.rotation = 1; 
         } 
     };
     
     const handleInput = (e) => { 
+        // IGNORE CLICKS IF CLICKING A BUTTON
         if(e.target.closest('button') || e.target.closest('.icon-btn')) return; 
-        if(e.type === 'keydown' && e.code !== "Space" && e.code !== "ArrowUp") return;
+
+        // BLOCK INPUT IF SHOP, MENU, OR PAUSE IS OPEN, OR IF ON START SCREEN (Prevent background click start)
+        if (gameState === "START" || gameState === "SHOP" || gameState === "MENU" || gameState === "PAUSED") return;
+
+        if(e.type === 'keydown' && e.code !== "Space" && e.code !== "ArrowUp") return; 
         if(e.type === 'keydown') e.preventDefault(); 
-        if (gameState === "PLAYING" || gameState === "START" || gameState === "GAMEOVER") doJump(e); 
+        
+        if (gameState === "PLAYING" || gameState === "GAMEOVER") doJump(e); 
     };
 
-    window.addEventListener('mousedown', handleInput); 
-    window.addEventListener('touchstart', handleInput, {passive: false});
-    window.addEventListener('keydown', handleInput);
-
+    window.addEventListener('mousedown', handleInput); window.addEventListener('touchstart', handleInput, {passive: false}); window.addEventListener('keydown', handleInput);
     init();
 </script>
 </body>
