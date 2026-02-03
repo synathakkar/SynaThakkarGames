@@ -261,18 +261,17 @@
 
         /* PHONE SPECIFIC ADJUSTMENTS */
         @media (max-width: 600px) { 
-            .menu-logo { margin-top: 15vh; font-size: clamp(50px, 18vw, 90px); } 
-            .menu-center { padding-bottom: 12vh; gap: 12px; } 
+            /* MOVED LOGO AND BUTTONS DOWN */
+            .menu-logo { margin-top: 22vh; font-size: clamp(50px, 18vw, 90px); } 
+            .menu-center { padding-bottom: 8vh; gap: 12px; } 
 
             /* TURTLE VISIBILITY FIX: 
-               Moved top to 54%. 
-               42% was too high ("in the air"). 
-               60% was too low (covered by buttons).
-               54% lands it right behind the Play button.
+               Moved top to 60%. 
+               This pushes the turtle down along with the UI group.
             */
             .turtle-container { 
                 width: 300px !important; height: 300px !important; 
-                top: 54% !important; left: 50% !important;
+                top: 60% !important; left: 50% !important;
                 transform: translate(-50%, -50%) scale(0.65) !important; 
                 margin-top: 0;
             }
@@ -926,7 +925,11 @@
         let isPhone = window.innerWidth < 600;
         let camOffsetRatio = isPhone ? 0.15 : 0.3;
         
+        // FIXED CAMERA CLAMPING
         let targetCamX = player.x - (logicalWidth * camOffsetRatio); 
+        // Ensure camera doesn't go below 0 (start of level)
+        if(targetCamX < 0) targetCamX = 0; 
+        
         cameraX += (targetCamX - cameraX) * (0.1 * dt);
         
         let targetCamY = 0; if (player.y < -100) targetCamY = player.y + 100; cameraY += (targetCamY - cameraY) * (0.05 * dt);
