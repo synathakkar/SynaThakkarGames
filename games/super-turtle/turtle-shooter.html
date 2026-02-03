@@ -150,7 +150,8 @@
         .turtle-container {
             /* Positioning Logic ONLY */
             position: absolute;
-            top: 48%; left: 50%;
+            top: 58%; /* PC DEFAULT: Behind Buttons */
+            left: 50%;
             transform: translate(-50%, -50%);
             width: 300px; height: 300px;
             z-index: 5;
@@ -264,12 +265,14 @@
             .menu-center { padding-bottom: 12vh; gap: 12px; } 
 
             /* TURTLE VISIBILITY FIX: 
-               Moved top to 60% to place it BEHIND the Play button area. 
-               scale(0.65) reduces size for mobile.
+               Moved top to 54%. 
+               42% was too high ("in the air"). 
+               60% was too low (covered by buttons).
+               54% lands it right behind the Play button.
             */
             .turtle-container { 
                 width: 300px !important; height: 300px !important; 
-                top: 60% !important; left: 50% !important;
+                top: 54% !important; left: 50% !important;
                 transform: translate(-50%, -50%) scale(0.65) !important; 
                 margin-top: 0;
             }
