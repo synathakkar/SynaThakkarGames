@@ -261,26 +261,20 @@
 
         /* PHONE SPECIFIC ADJUSTMENTS */
         @media (max-width: 600px) { 
-            /* MOVED LOGO AND BUTTONS DOWN */
             .menu-logo { margin-top: 22vh; font-size: clamp(50px, 18vw, 90px); } 
             .menu-center { padding-bottom: 8vh; gap: 12px; } 
 
             /* TURTLE VISIBILITY FIX: 
-               Moved top to 60%. 
-               This pushes the turtle down along with the UI group.
+               Moved top to 54% to place it correctly behind buttons (not too high/low).
             */
             .turtle-container { 
                 width: 300px !important; height: 300px !important; 
-                top: 60% !important; left: 50% !important;
+                top: 54% !important; left: 50% !important;
                 transform: translate(-50%, -50%) scale(0.65) !important; 
                 margin-top: 0;
             }
 
-            /* SHOP & SETTINGS UI FIXES:
-               1. width: 88% -> Creates bleeding space (approx 6% on sides).
-               2. top: 55% -> Pushes modal down to avoid top overlap.
-               3. height: 72vh -> Reduces height so top doesn't overlap Coins UI.
-            */
+            /* SHOP & SETTINGS UI FIXES */
             .screen { width: 88%; box-sizing: border-box; padding: 2vh 4vw; }
             
             #shop-screen { 
@@ -807,18 +801,9 @@
         animTime += dt; player.speed = Math.min(12, player.speed + 0.0008 * dt); player.dx = player.speed; bgScrollX += player.speed * dt; 
 
         // --- LEVEL TRANSITION LOGIC ---
-        let coinsInStage = score % 40;
-        if (score > 0 && coinsInStage >= 35 && !warningTriggered) { 
-            warningTriggered = true; 
-            showLevelText("⚠ WARNING ⚠", "HAZARD ZONE AHEAD", true); 
-        }
-        if (coinsInStage < 30) { warningTriggered = false; }
-
         let stage = Math.floor(score / 40);
-        let nextTheme = 'green';
-        let levelName = "GRASSLAND";
-        let levelTitle = "PLACE";
-
+        let coinsInStage = score % 40;
+        
         const THEMES = ['green', 'desert', 'iceage', 'volcanic'];
         let calculatedThemeId = '';
 
@@ -828,6 +813,17 @@
             let rndIndex = (stage * 7) % 4;
             calculatedThemeId = THEMES[rndIndex];
         }
+
+        // FIX: Warning only appears for Grassland -> Desert transition
+        if (score > 0 && calculatedThemeId === 'green' && coinsInStage >= 35 && !warningTriggered) { 
+            warningTriggered = true; 
+            showLevelText("⚠ WARNING ⚠", "HAZARD ZONE AHEAD", true); 
+        }
+        if (coinsInStage < 30) { warningTriggered = false; }
+
+        let nextTheme = 'green';
+        let levelName = "GRASSLAND";
+        let levelTitle = "PLACE";
 
         if (calculatedThemeId === 'green') { nextTheme = 'green'; levelName = "GRASSLAND"; }
         else if (calculatedThemeId === 'desert') { nextTheme = 'desert'; levelName = "DESERT"; }
@@ -847,7 +843,14 @@
 
         if (targetTheme === 'iceage' && Math.random() > 0.96) { spawnParticles(cameraX + (Math.random() - 0.2) * (canvas.width / gameScale * 1.5), cameraY - 20, 'snow'); }
         
-        if (targetTheme === 'volcanic' && volcanoesSpawned < 2) {
+        // FIX: Volcano Cleanup Logic
+        for(let i=volcanoes.length-1; i>=0; i--) {
+             let vDrawX = volcanoes[i].x - (cameraX * 0.1); // Use 0.1 parallax logic for check
+             if(vDrawX < -1000) volcanoes.splice(i, 1);
+        }
+
+        // FIX: Volcano Spawn Logic (Strict bounds)
+        if (targetTheme === 'volcanic' && coinsInStage < 35 && volcanoesSpawned < 2) {
             let logicalWidth = canvas.width / gameScale;
             let lastVolcanoX = volcanoes.length > 0 ? volcanoes[volcanoes.length-1].x : -9999;
             if (cameraX > lastVolcanoX && Math.random() > 0.995) {
