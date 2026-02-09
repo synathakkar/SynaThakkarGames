@@ -163,7 +163,7 @@
             overflow: hidden;
         }
 
-        /* CSS ART: THE CUTE TURTLE */
+        /* --- CSS ART: THE CUTE TURTLE --- */
         .css-turtle {
             position: relative;
             width: 60px;
@@ -235,27 +235,124 @@
             z-index: 1;
         }
 
-        .l1 {
-            left: 0;
-            animation: walk 1s infinite alternate;
-        }
-
-        .l2 {
-            left: 40px;
-            animation: walk 1s infinite alternate-reverse;
-        }
+        .l1 { left: 0; animation: walk 1s infinite alternate; }
+        .l2 { left: 40px; animation: walk 1s infinite alternate-reverse; }
 
         @keyframes walk {
-            from {
-                transform: translateY(0);
-            }
-
-            to {
-                transform: translateY(-5px);
-            }
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
         }
 
-        /* Card Content */
+        /* --- CSS ART: CHICKEN OUT --- */
+        .chicken-bg {
+            background: #FF9A9E; /* Matches game background */
+        }
+
+        .css-chicken {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            animation: bounce 1s infinite alternate ease-in-out;
+        }
+
+        .chicken-body {
+            width: 50px;
+            height: 50px;
+            background: #FFD93D;
+            border-radius: 50%;
+            position: absolute;
+            top: 10px;
+            left: 5px;
+            z-index: 2;
+        }
+
+        .chicken-belly {
+            width: 35px;
+            height: 35px;
+            background: #FFEAA7;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            left: 12px;
+            z-index: 3;
+        }
+
+        .chicken-comb {
+            width: 12px;
+            height: 12px;
+            background: #FF5252;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 24px;
+            box-shadow: -10px 4px 0 #FF5252, 10px 4px 0 #FF5252;
+            z-index: 1;
+        }
+
+        .chicken-eye {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 22px;
+            z-index: 4;
+            animation: blink 3s infinite;
+        }
+        .eye-left { left: 15px; }
+        .eye-right { right: 15px; }
+
+        .chicken-pupil {
+            width: 3px;
+            height: 3px;
+            background: black;
+            border-radius: 50%;
+            position: absolute;
+            top: 4px;
+            left: 5px;
+        }
+
+        .chicken-beak {
+            width: 0; 
+            height: 0; 
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #E67E22;
+            position: absolute;
+            top: 32px;
+            left: 24px;
+            z-index: 4;
+        }
+
+        .chicken-wing {
+            width: 15px;
+            height: 10px;
+            background: #FBC02D;
+            border-radius: 50%;
+            position: absolute;
+            top: 30px;
+            z-index: 4;
+            animation: flap 0.5s infinite alternate;
+        }
+        .wing-left { left: -2px; transform: rotate(-20deg); }
+        .wing-right { right: -2px; transform: rotate(20deg); }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+
+        @keyframes blink {
+            0%, 96%, 100% { transform: scaleY(1); }
+            98% { transform: scaleY(0.1); }
+        }
+
+        @keyframes flap {
+            from { transform: translateY(0) rotate(0deg); }
+            to { transform: translateY(-3px) rotate(15deg); }
+        }
+
+        /* --- CARD CONTENT --- */
         .card-content {
             padding: 25px;
             text-align: center;
@@ -357,16 +454,25 @@
                 </div>
             </div>
 
-            <div class="game-card" style="opacity: 0.5;">
-                <div class="card-art" style="background: #333;">
-                    <span style="font-family: 'Press Start 2P'; color: #555;">?</span>
+            <div class="game-card">
+                <div class="card-art chicken-bg">
+                    <div class="css-chicken">
+                        <div class="chicken-comb"></div>
+                        <div class="chicken-body"></div>
+                        <div class="chicken-belly"></div>
+                        <div class="chicken-wing wing-left"></div>
+                        <div class="chicken-wing wing-right"></div>
+                        <div class="chicken-eye eye-left"><div class="chicken-pupil"></div></div>
+                        <div class="chicken-eye eye-right"><div class="chicken-pupil"></div></div>
+                        <div class="chicken-beak"></div>
+                    </div>
                 </div>
                 <div class="card-content">
                     <div>
-                        <h3>COMING SOON</h3>
-                        <p>Currently brewing the next big idea...</p>
+                        <h3>CHICKEN OUT!</h3>
+                        <p>Don't get pushed off! Survive the moving platforms in this chaotic survival jumper.</p>
                     </div>
-                    <button class="play-btn" style="cursor: not-allowed; border-color: #555; color: #555;">LOCKED</button>
+                    <a href="/games/chicken_out/Chicken_out.html" class="play-btn">PLAY NOW</a>
                 </div>
             </div>
 
@@ -374,7 +480,7 @@
     </section>
 
     <footer>
-        <p>&copy; 2024 Syna Thakkar. Built with Code & Coffee.</p>
+        <p>&copy; 2026 Syna Thakkar. Built with Code & Coffee.</p>
     </footer>
 
 </body>
