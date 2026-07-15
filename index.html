@@ -2,486 +2,586 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Syna Thakkar | Game Developer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
-    <script type="module">
-        import { inject } from 'https://cdn.jsdelivr.net/npm/@vercel/analytics/+esm';
-        inject();
-    </script>
-
-    <style>
-        /* --- RESET & BASICS --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background-color: #1a1a1a;
-            color: #fff;
-            font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-            transition: 0.3s;
-        }
-
-        ul {
-            list-style: none;
-        }
-
-        /* --- VARIABLES --- */
-        :root {
-            --neon-green: #76FF03;
-            --neon-blue: #4FC3F7;
-            --gold: #FFD700;
-            --card-bg: #2a2a2a;
-        }
-
-        /* --- HEADER / HERO --- */
-        header {
-            padding: 20px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 1.2rem;
-            color: var(--neon-green);
-        }
-
-        .hero {
-            height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 20px;
-            background: radial-gradient(circle at center, #333 0%, #1a1a1a 70%);
-        }
-
-            .hero h1 {
-                font-family: 'Press Start 2P', cursive;
-                font-size: 3rem;
-                margin-bottom: 20px;
-                color: #fff;
-                text-shadow: 4px 4px 0 #000;
-            }
-
-            .hero span {
-                color: var(--neon-green);
-            }
-
-            .hero p {
-                font-size: 1.2rem;
-                color: #ccc;
-                max-width: 600px;
-                margin-bottom: 40px;
-            }
-
-        .btn-main {
-            padding: 15px 40px;
-            background: var(--neon-green);
-            color: #000;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 14px;
-            border-radius: 5px;
-            box-shadow: 0 5px 0 #388E3C;
-        }
-
-            .btn-main:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 8px 0 #388E3C;
-            }
-
-            .btn-main:active {
-                transform: translateY(2px);
-                box-shadow: 0 2px 0 #388E3C;
-            }
-
-        /* --- GAMES SECTION --- */
-        .games-section {
-            padding: 80px 5%;
-        }
-
-        .section-title {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 2rem;
-            margin-bottom: 50px;
-            text-align: center;
-            color: var(--neon-blue);
-        }
-
-        .games-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 40px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* --- GAME CARD --- */
-        .game-card {
-            background: var(--card-bg);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: transform 0.3s, box-shadow 0.3s;
-            border: 2px solid #333;
-            display: flex;
-            flex-direction: column;
-        }
-
-            .game-card:hover {
-                transform: translateY(-10px);
-                box-shadow: 0 10px 30px rgba(118, 255, 3, 0.2);
-                border-color: var(--neon-green);
-            }
-
-        /* ART PREVIEW AREA */
-        .card-art {
-            height: 200px;
-            background: linear-gradient(to bottom, var(--neon-blue), #E1F5FE);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* --- CSS ART: THE CUTE TURTLE --- */
-        .css-turtle {
-            position: relative;
-            width: 60px;
-            height: 40px;
-        }
-
-        .turtle-shell {
-            width: 50px;
-            height: 40px;
-            background: #2E7D32;
-            border-radius: 50%;
-            position: absolute;
-            left: 5px;
-            top: 0;
-            z-index: 2;
-        }
-
-        .turtle-belly {
-            width: 40px;
-            height: 25px;
-            background: #C6FF00;
-            border-radius: 50%;
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            z-index: 3;
-        }
-
-        .turtle-head {
-            width: 30px;
-            height: 30px;
-            background: #64DD17;
-            border-radius: 50%;
-            position: absolute;
-            right: -10px;
-            top: -5px;
-            z-index: 4;
-        }
-
-        .turtle-eye {
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            right: -2px;
-            top: 5px;
-            z-index: 5;
-        }
-
-        .turtle-pupil {
-            width: 3px;
-            height: 3px;
-            background: black;
-            border-radius: 50%;
-            position: absolute;
-            right: 0px;
-            top: 7px;
-            z-index: 6;
-        }
-
-        .turtle-leg {
-            width: 15px;
-            height: 15px;
-            background: #2E7D32;
-            border-radius: 50%;
-            position: absolute;
-            bottom: -5px;
-            z-index: 1;
-        }
-
-        .l1 { left: 0; animation: walk 1s infinite alternate; }
-        .l2 { left: 40px; animation: walk 1s infinite alternate-reverse; }
-
-        @keyframes walk {
-            from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
-        }
-
-        /* --- CSS ART: CHICKEN OUT --- */
-        .chicken-bg {
-            background: #FF9A9E; /* Matches game background */
-        }
-
-        .css-chicken {
-            position: relative;
-            width: 60px;
-            height: 60px;
-            animation: bounce 1s infinite alternate ease-in-out;
-        }
-
-        .chicken-body {
-            width: 50px;
-            height: 50px;
-            background: #FFD93D;
-            border-radius: 50%;
-            position: absolute;
-            top: 10px;
-            left: 5px;
-            z-index: 2;
-        }
-
-        .chicken-belly {
-            width: 35px;
-            height: 35px;
-            background: #FFEAA7;
-            border-radius: 50%;
-            position: absolute;
-            top: 20px;
-            left: 12px;
-            z-index: 3;
-        }
-
-        .chicken-comb {
-            width: 12px;
-            height: 12px;
-            background: #FF5252;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 24px;
-            box-shadow: -10px 4px 0 #FF5252, 10px 4px 0 #FF5252;
-            z-index: 1;
-        }
-
-        .chicken-eye {
-            width: 10px;
-            height: 10px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 22px;
-            z-index: 4;
-            animation: blink 3s infinite;
-        }
-        .eye-left { left: 15px; }
-        .eye-right { right: 15px; }
-
-        .chicken-pupil {
-            width: 3px;
-            height: 3px;
-            background: black;
-            border-radius: 50%;
-            position: absolute;
-            top: 4px;
-            left: 5px;
-        }
-
-        .chicken-beak {
-            width: 0; 
-            height: 0; 
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 8px solid #E67E22;
-            position: absolute;
-            top: 32px;
-            left: 24px;
-            z-index: 4;
-        }
-
-        .chicken-wing {
-            width: 15px;
-            height: 10px;
-            background: #FBC02D;
-            border-radius: 50%;
-            position: absolute;
-            top: 30px;
-            z-index: 4;
-            animation: flap 0.5s infinite alternate;
-        }
-        .wing-left { left: -2px; transform: rotate(-20deg); }
-        .wing-right { right: -2px; transform: rotate(20deg); }
-
-        @keyframes bounce {
-            from { transform: translateY(0); }
-            to { transform: translateY(-5px); }
-        }
-
-        @keyframes blink {
-            0%, 96%, 100% { transform: scaleY(1); }
-            98% { transform: scaleY(0.1); }
-        }
-
-        @keyframes flap {
-            from { transform: translateY(0) rotate(0deg); }
-            to { transform: translateY(-3px) rotate(15deg); }
-        }
-
-        /* --- CARD CONTENT --- */
-        .card-content {
-            padding: 25px;
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-            .card-content h3 {
-                font-family: 'Press Start 2P', cursive;
-                font-size: 1.2rem;
-                margin-bottom: 10px;
-                color: var(--gold);
-            }
-
-            .card-content p {
-                font-size: 0.9rem;
-                color: #aaa;
-                margin-bottom: 20px;
-            }
-
-        .play-btn {
-            display: inline-block;
-            padding: 10px 0;
-            width: 100%;
-            background: transparent;
-            border: 2px solid var(--neon-green);
-            color: var(--neon-green);
-            font-weight: bold;
-            border-radius: 5px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 12px;
-        }
-
-            .play-btn:hover {
-                background: var(--neon-green);
-                color: #000;
-            }
-
-        /* --- FOOTER --- */
-        footer {
-            text-align: center;
-            padding: 40px;
-            border-top: 1px solid #333;
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2rem;
-            }
-
-            .hero p {
-                font-size: 1rem;
-            }
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- SEO Optimization -->
+    <title>Syna Thakkar — Creative Game Dev & Visual Artist Portfolio</title>
+    <meta name="description" content="Explore Syna Thakkar's creative portfolio featuring mini mobile HTML5 games, illustrations, game art concept designs, 2D/3D animations, and posters.">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Header Navigation -->
     <header>
-        <div class="logo">SYNA.GAMES</div>
-        <nav>
-        </nav>
+        <div class="container nav-content">
+            <a href="index.html" class="nav-logo" id="site-logo">
+                SYNA<span>.</span>GAMES
+            </a>
+            <nav class="nav-links">
+                <a href="#toc-section">Table of Content</a>
+                <a href="https://github.com" target="_blank">Github</a>
+            </nav>
+        </div>
     </header>
 
-    <section class="hero">
-        <h1>HI, I'M <span>SYNA THAKKAR</span></h1>
-        <p>Creating cute, chaotic, and classic web games.</p>
-        <a href="#games" class="btn-main">VIEW GAMES</a>
-    </section>
+    <!-- Main Content Area -->
+    <main class="container">
+        
+        <!-- Hero Introduction Section -->
+        <section class="hero">
+            <div class="hero-text">
+                <div class="hero-welcome">Welcome to my portfolio </div>
+                <h1>Hi, I'm Syna Thakkar</h1>
+                <p>I am a visual artist and game designer passionate about making games, illustrations, assets, and occasionally making fun mini-games that run instantly in your browser.</p>
+            </div>
+            
+            <div class="hero-visual">
+                <!-- Inline SVG Cute Bubbly Cottage -->
+                <svg class="cottage-svg" viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Ground/Grass patch -->
+                    <ellipse cx="80" cy="105" rx="70" ry="12" fill="#D6DBD2" />
+                    <!-- Trees in background -->
+                    <path d="M25 105 L30 80 L35 105 Z" fill="#B3C4B3" />
+                    <path d="M135 105 L140 75 L145 105 Z" fill="#B3C4B3" />
+                    <path d="M125 105 L130 85 L135 105 Z" fill="#9CB29C" />
+                    
+                    <!-- House Body -->
+                    <rect x="40" y="60" width="80" height="40" rx="4" fill="#FFF" stroke="#5A5A57" stroke-width="2.5" />
+                    <!-- Roof (Pastel Pink) -->
+                    <polygon points="35,62 80,25 125,62" fill="#F3DFE3" stroke="#5A5A57" stroke-width="2.5" stroke-linejoin="round" />
+                    
+                    <!-- Door (Pastel Sand) -->
+                    <rect x="90" y="72" width="20" height="28" fill="#EAD5C3" stroke="#5A5A57" stroke-width="2" />
+                    <circle cx="95" cy="86" r="1.5" fill="#5A5A57" />
+                    
+                    <!-- Window -->
+                    <rect x="52" y="70" width="22" height="18" fill="#FFF" stroke="#5A5A57" stroke-width="2" />
+                    <line x1="63" y1="70" x2="63" y2="88" stroke="#5A5A57" stroke-width="1.5" />
+                    <line x1="52" y1="79" x2="74" y2="79" stroke="#5A5A57" stroke-width="1.5" />
+                    
+                    <!-- Chimney -->
+                    <rect x="100" y="32" width="10" height="15" fill="#FFF" stroke="#5A5A57" stroke-width="2.5" />
+                    <polygon points="98,32 112,32 105,27" fill="#F3DFE3" stroke="#5A5A57" stroke-width="2" />
+                </svg>
+            </div>
+        </section>
 
-    <section id="games" class="games-section">
-        <h2 class="section-title">MY PROJECTS</h2>
-
-        <div class="games-grid">
-
-            <div class="game-card">
-                <div class="card-art">
-                    <div class="css-turtle">
-                        <div class="turtle-shell"></div>
-                        <div class="turtle-belly"></div>
-                        <div class="turtle-head"></div>
-                        <div class="turtle-eye"></div>
-                        <div class="turtle-pupil"></div>
-                        <div class="turtle-leg l1"></div>
-                        <div class="turtle-leg l2"></div>
-                    </div>
+        <!-- Profile Biography Section -->
+        <section class="bio-section">
+            
+            <!-- Polaroid Profile Frame -->
+            <div class="polaroid-card">
+                <div class="polaroid-img-wrapper">
+                    <img src="assets/images/profile_avatar.png" alt="Syna Thakkar Profile Avatar">
                 </div>
-                <div class="card-content">
-                    <div>
-                        <h3>SUPER TURTLE</h3>
-                        <p>An endless runner with procedurally generated terrain, double jumps, and coin collecting madness!</p>
-                    </div>
-                    <a href="/games/super-turtle/turtle-shooter.html" class="play-btn">PLAY NOW</a>
+                <div class="polaroid-caption">
+                    Syna Thakkar
+                    <div class="polaroid-sub">Game Dev &amp; Visual Artist</div>
                 </div>
             </div>
 
-            <div class="game-card">
-                <div class="card-art chicken-bg">
-                    <div class="css-chicken">
-                        <div class="chicken-comb"></div>
-                        <div class="chicken-body"></div>
-                        <div class="chicken-belly"></div>
-                        <div class="chicken-wing wing-left"></div>
-                        <div class="chicken-wing wing-right"></div>
-                        <div class="chicken-eye eye-left"><div class="chicken-pupil"></div></div>
-                        <div class="chicken-eye eye-right"><div class="chicken-pupil"></div></div>
-                        <div class="chicken-beak"></div>
+            <!-- Technical Skills, Education, Personal Skills Details -->
+            <div class="bio-details">
+                <div>
+                    <h3 class="bio-card-title">Technical Skills</h3>
+                    <div class="skills-grid">
+                        <span class="skill-badge sage">Unity</span>
+                        <span class="skill-badge peach">Unreal</span>
+                        <span class="skill-badge blue">HTML5 &amp; CSS3</span>
+                        <span class="skill-badge rose">Photoshop</span>
+                        <span class="skill-badge lavender">Illustrator</span>
+                        <span class="skill-badge sage">Blender</span>
+                        <span class="skill-badge peach">Procreate</span>
                     </div>
                 </div>
-                <div class="card-content">
+
+                <div class="bio-grid-2col">
                     <div>
-                        <h3>CHICKEN OUT!</h3>
-                        <p>Don't get pushed off! Survive the moving platforms in this chaotic survival jumper.</p>
+                        <h3 class="bio-card-title">Education</h3>
+                        <ul class="info-list">
+                            <li>
+                                <strong>Degree in BDes Game Design</strong>
+                                2024 - 2028 · WHistling Woods International
+                            </li>
+                        </ul>
                     </div>
-                    <a href="/games/chicken_out/Chicken_out.html" class="play-btn">PLAY NOW</a>
+                    <div>
+                        <h3 class="bio-card-title">Personal Skills</h3>
+                        <ul class="info-list">
+                            <li><strong>Game Design &amp; Logic</strong></li>
+                            <li><strong>2D/3D Asset Pipeline</strong></li>
+                            <li><strong>Animation</strong></li>
+                            <li><strong>Collaborative Spirit</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experience & Affiliation Windows -->
+        <section class="experience-section">
+            <!-- Left Panel (Rose Theme) -->
+            <div class="experience-card rose">
+                <h3 class="bio-card-title">Experience &amp; Affiliation</h3>
+                <div class="exp-item">
+                    <h4>Lead Game Designer</h4>
+                    <span>Freelance (2025 - Present)</span>
+                    <p>Designed and coded lightweight browser-based mobile mini-games with dynamic physics and retro mechanics.</p>
+                </div>
+                <div class="exp-item">
+                    <h4>UI/UX &amp; Graphic Designer</h4>
+                    <span>Creative Lab (2024)</span>
+                    <p>Built user flows, menu assets, icons, and layout mockups for interactive mobile applications.</p>
+                </div>
+                <div class="exp-item">
+                    <h4>Graphic &amp; Concept Intern</h4>
+                    <span>Pixel Play Studio (2023)</span>
+                    <p>Collaborated on pixel sprite sheets, vector backdrops, and level design layout sheets.</p>
                 </div>
             </div>
 
-        </div>
-    </section>
+            <!-- Right Panel (Sage Theme) -->
+            <div class="experience-card sage">
+                <h3 class="bio-card-title">Art &amp; Animation Work</h3>
+                <div class="exp-item">
+                    <h4>Visual Artist</h4>
+                    <span>Independent Exhibition (2023 - Present)</span>
+                    <p>Created and exhibited series of vector landscape illustrations, poster layouts, and digital paintings.</p>
+                </div>
+                <div class="exp-item">
+                    <h4>3D Asset Modeler</h4>
+                    <span>Freelance (2024)</span>
+                    <p>Rendered isometric 3D clay environment nodes and low-poly hard surface objects for web viewports.</p>
+                </div>
+                <div class="exp-item">
+                    <h4>2D Animator</h4>
+                    <span>Game Jam collaborations (2023)</span>
+                    <p>Designed sprites, keys, and loop sheets for frame-by-frame 2D animation nodes.</p>
+                </div>
+            </div>
+        </section>
 
+        <!-- Table of Content (Interactive Sections Menu) -->
+        <section id="toc-section" class="toc-section">
+            <h2 class="toc-title">Table of Content</h2>
+            
+            <div class="toc-grid">
+                
+                <button class="toc-btn btn-illustrations" onclick="openModal('modal-illustrations')">
+                    1. Illustrations
+                    <div class="btn-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </button>
+
+                <button class="toc-btn btn-games" onclick="openModal('modal-games')">
+                    2. Mini Mobile Games
+                    <div class="btn-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </button>
+
+                <button class="toc-btn btn-gameart" onclick="openModal('modal-gameart')">
+                    3. Game Art
+                    <div class="btn-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </button>
+
+                <button class="toc-btn btn-2danimation" onclick="openModal('modal-2danimation')">
+                    4. 2D Animation
+                    <div class="btn-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </button>
+
+                <button class="toc-btn btn-3danimation" onclick="openModal('modal-3danimation')">
+                    5. 3D Animation
+                    <div class="btn-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </button>
+
+                <button class="toc-btn btn-posters" onclick="openModal('modal-posters')">
+                    6. Posters
+                    <div class="btn-arrow">
+                        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                </button>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
     <footer>
-        <p>&copy; 2026 Syna Thakkar. Built with Code & Coffee.</p>
+        <div class="container">
+            <p>&copy; 2026 Syna Thakkar. Created with love &amp; code.</p>
+            <p style="font-size: 0.8rem; opacity: 0.7;">Playable instantly on both desktop and mobile devices.</p>
+        </div>
     </footer>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PORTFOLIO MODALS / OVERLAYS
+         ═══════════════════════════════════════════════════════════════ -->
+
+    <!-- Modal 1: Illustrations -->
+    <div id="modal-illustrations" class="modal-overlay" onclick="closeOnOverlayClick(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">1. Illustrations</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-illustrations')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <div class="gallery-img-box">
+                            <img src="assets/images/illustration_1.png" alt="Whimsical Valley Illustration">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Whimsical Valley</h4>
+                            <p>Dreamy landscape vector art in soft peach and green shades.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-img-box">
+                            <img src="assets/images/illustration_1.png" alt="Cloud Haven Illustration" style="filter: hue-rotate(45deg);">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Cloud Haven</h4>
+                            <p>Soft sky landscapes showcasing bubbly, cozy vectors.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-img-box">
+                            <img src="assets/images/illustration_1.png" alt="Desert Calm Illustration" style="filter: hue-rotate(180deg);">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Desert Calm</h4>
+                            <p>Relaxing dunes under warm, desaturated pastel gradients.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Mini Mobile Games -->
+    <div id="modal-games" class="modal-overlay" onclick="closeOnOverlayClick(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">2. Mini Mobile Games</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-games')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="games-modal-grid">
+                    
+                    <!-- Game Card: SkateAway -->
+                    <a href="games/SkateAway/index.html" class="modal-game-card">
+                        <div class="modal-game-visual skate">
+                            <div class="modal-game-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#FF8A9A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 9c0-1.5 2-2.5 8-2.5s8 1 8 2.5-2 2.5-8 2.5-8-1-8-2.5z" fill="#FFF2F4"/>
+                                    <circle cx="8" cy="15" r="2" fill="#2D3748" stroke="#2D3748"/>
+                                    <circle cx="16" cy="15" r="2" fill="#2D3748" stroke="#2D3748"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="modal-game-details">
+                            <h4>SkateAway</h4>
+                            <p>Surf endless desert dunes on your board. Pump, launch, and perform trick combos through a warm sunset landscape.</p>
+                            <div class="modal-game-action">
+                                Play Game
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Game Card: Super Turtle -->
+                    <a href="games/super-turtle/index.html" class="modal-game-card">
+                        <div class="modal-game-visual turtle">
+                            <div class="modal-game-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#81C784" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 4C7 4 3 8 3 13h18c0-5-4-9-9-9z" fill="#E8F5E9"/>
+                                    <circle cx="21" cy="12" r="1.5" fill="#4CAF50" stroke="#4CAF50"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="modal-game-details">
+                            <h4>Super Turtle</h4>
+                            <p>Infinite terrain runner with double jumps, level transitions, and coin-collecting mechanics in cute CSS-art graphics.</p>
+                            <div class="modal-game-action">
+                                Play Game
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Game Card: Chicken Out! -->
+                    <a href="games/chicken_out/Chicken_out.html" class="modal-game-card">
+                        <div class="modal-game-visual chicken">
+                            <div class="modal-game-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#F06292" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="13" r="6.5" fill="#FFF0F5"/>
+                                    <path d="M12 12l2 1.5-2 1.5V12z" fill="#FF8A65" stroke="#E67E22" stroke-width="1.5"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="modal-game-details">
+                            <h4>Chicken Out!</h4>
+                            <p>Chaotic survival jumper. Time jumps carefully to land on moving boxes without falling off. Dynamic night/day schedules.</p>
+                            <div class="modal-game-action">
+                                Play Game
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Game Card: Take Me Gravity -->
+                    <a href="games/take_me_gravity/Take me gravity.html" class="modal-game-card">
+                        <div class="modal-game-visual gravity">
+                            <div class="modal-game-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#9575CD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M8 8l4-4 4 4M12 4v7M16 16l-4 4-4-4" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="modal-game-details">
+                            <h4>Take Me Gravity</h4>
+                            <p>Fast-paced vertical runner where you tap to flip gravity from side to side. Avoid spikes and falling into the open wall gaps.</p>
+                            <div class="modal-game-action">
+                                Play Game
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                            </div>
+                        </div>
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Game Art -->
+    <div id="modal-gameart" class="modal-overlay" onclick="closeOnOverlayClick(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">3. Game Art</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-gameart')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="gallery-grid">
+                    <div class="gallery-item">
+                        <div class="gallery-img-box">
+                            <img src="assets/images/game_art_1.png" alt="Mechanical Turtle Game Concept">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Mechanical Turtle</h4>
+                            <p>Isometric character model sheet showing clay render styles.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-img-box">
+                            <img src="assets/images/game_art_1.png" alt="Hover Drone Concept" style="filter: hue-rotate(90deg);">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Hover Drone</h4>
+                            <p>Robot companion character draft for a Sci-Fi pastel adventure.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item">
+                        <div class="gallery-img-box">
+                            <img src="assets/images/game_art_1.png" alt="Sky Station Prop" style="filter: hue-rotate(240deg);">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Sky Station Prop</h4>
+                            <p>Concept art for environmental items and static decorative pillars.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: 2D Animation -->
+    <div id="modal-2danimation" class="modal-overlay" onclick="closeOnOverlayClick(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">4. 2D Animation</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-2danimation')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="anim-viewer">
+                    <div class="anim-canvas-wrapper">
+                        <!-- Simulated Sprite Runner Container -->
+                        <div id="fox-sprite" style="width: 140px; height: 140px; background: url('assets/images/animation_2d.png') no-repeat; background-size: cover; background-position: 0 0;"></div>
+                    </div>
+                    <div>
+                        <h4>Jumping Fox Sprite Sheet</h4>
+                        <p style="color: var(--text-secondary); margin-bottom: 12px;">Frame-by-frame vector sprite sheet rendering of a running/jumping fox.</p>
+                        <button class="play-sprite-btn" onclick="toggleSpriteAnimation()">Play Frame Sequence</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: 3D Animation -->
+    <div id="modal-3danimation" class="modal-overlay" onclick="closeOnOverlayClick(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">5. 3D Animation</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-3danimation')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="anim-viewer">
+                    <div class="anim-canvas-wrapper" style="aspect-ratio: 1; max-width: 320px;">
+                        <!-- Custom CSS 3D Cube Showcase -->
+                        <div class="scene-3d">
+                            <div class="cube-3d">
+                                <div class="face-3d front">3D</div>
+                                <div class="face-3d back">Arts</div>
+                                <div class="face-3d right">Mesh</div>
+                                <div class="face-3d left">Clay</div>
+                                <div class="face-3d top">Unity</div>
+                                <div class="face-3d bottom">Blender</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Floating Island Clay Render</h4>
+                        <p style="color: var(--text-secondary); margin-bottom: 15px;">Isometric view of a floating structure sculpted in Blender and rendered in soft global ambient lighting.</p>
+                        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                            <img src="assets/images/animation_3d.png" style="width: 100px; height: 100px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: cover;">
+                            <img src="assets/images/animation_3d.png" style="width: 100px; height: 100px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: cover; filter: hue-rotate(90deg);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 6: Posters -->
+    <div id="modal-posters" class="modal-overlay" onclick="closeOnOverlayClick(event)">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="modal-title">6. Posters</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-posters')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="gallery-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));">
+                    <div class="gallery-item" style="border-radius: 8px;">
+                        <div class="gallery-img-box" style="aspect-ratio: 3/4;">
+                            <img src="assets/images/poster_1.png" alt="Console Controller Poster">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Console Controller</h4>
+                            <p>Minimalist retro controller graphic set on warm sand backdrops.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item" style="border-radius: 8px;">
+                        <div class="gallery-img-box" style="aspect-ratio: 3/4;">
+                            <img src="assets/images/poster_1.png" alt="Arcade Cabinet Poster" style="filter: hue-rotate(120deg);">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Arcade Cabinet</h4>
+                            <p>Vibrant arcade vector layout celebrating retro game cabinets.</p>
+                        </div>
+                    </div>
+                    <div class="gallery-item" style="border-radius: 8px;">
+                        <div class="gallery-img-box" style="aspect-ratio: 3/4;">
+                            <img src="assets/images/poster_1.png" alt="Cyber Synth Concert Poster" style="filter: hue-rotate(260deg);">
+                        </div>
+                        <div class="gallery-info">
+                            <h4>Cyber Synth Concert</h4>
+                            <p>Aesthetic synth concert poster incorporating clean grids.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         INTERACTIVE SCRIPTS
+         ═══════════════════════════════════════════════════════════════ -->
+    <script>
+        // Modal toggling functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Lock main scroll
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = ''; // Unlock main scroll
+            }
+        }
+
+        function closeOnOverlayClick(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // 2D Fox Sprite Animator Simulator
+        let spriteInterval = null;
+        let isAnimating = false;
+        let frame = 0;
+        const totalFrames = 8; // Assumes 8 vertical/horizontal frames in generator sprite
+        const spriteSize = 140; // width/height of viewport
+
+        function toggleSpriteAnimation() {
+            const spriteDiv = document.getElementById('fox-sprite');
+            const playBtn = event.target;
+            
+            if (isAnimating) {
+                // Stop Animation
+                clearInterval(spriteInterval);
+                playBtn.innerText = "Play Frame Sequence";
+                isAnimating = false;
+                spriteDiv.style.backgroundPosition = "0 0";
+            } else {
+                // Start Animation
+                playBtn.innerText = "Stop Animation";
+                isAnimating = true;
+                spriteInterval = setInterval(() => {
+                    frame = (frame + 1) % totalFrames;
+                    // Move background position along a simple horizontal/vertical axis
+                    // depending on sprite layout, let's offset horizontally
+                    const offset = frame * spriteSize;
+                    spriteDiv.style.backgroundPosition = `-${offset}px 0`;
+                }, 130);
+            }
+        }
+
+        // Close modal on Escape key press
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const activeModal = document.querySelector('.modal-overlay.active');
+                if (activeModal) {
+                    activeModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>
